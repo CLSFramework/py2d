@@ -9,6 +9,10 @@ import logging
 import grpc
 import argparse
 import datetime
+from src.interfaces.IAgent import IAgent
+from src.sample_coach_agent import SampleCoachAgent
+from src.sample_player_agent import SamplePlayerAgent
+from src.sample_trainer_agent import SampleTrainerAgent
 
 
 console_logging_level = logging.INFO
@@ -22,48 +26,39 @@ class GrpcAgent:
     def __init__(self, agent_type, uniform_number, logger) -> None:
         self.agent_type: pb2.AgentType = agent_type
         self.uniform_number: int = uniform_number
-        self.server_params: Union[pb2.ServerParam, None] = None
-        self.player_params: Union[pb2.PlayerParam, None] = None
-        self.player_types: dict[int, pb2.PlayerType] = {}
-        self.debug_mode: bool = False
+        self.agent: IAgent = None
         self.logger: logging.Logger = logger
+        if self.agent_type == pb2.AgentType.PlayerT:
+            self.agent = SamplePlayerAgent()
+        elif self.agent_type == pb2.AgentType.CoachT:
+            self.agent = SampleCoachAgent()
+        elif self.agent_type == pb2.AgentType.TrainerT:
+            self.agent = SampleTrainerAgent()
+        self.agent.set_logger(self.logger)
+        self.debug_mode: bool = False
+        
     
     def GetAction(self, state: pb2.State):
         self.logger.debug(f"================================= cycle={state.world_model.cycle}.{state.world_model.stoped_cycle} =================================")
         # self.logger.debug(f"State: {state}")
-        if self.agent_type == pb2.AgentType.PlayerT:
-            return self.GetPlayerActions(state)
-        elif self.agent_type == pb2.AgentType.CoachT:
-            return self.GetCoachActions(state)
-        elif self.agent_type == pb2.AgentType.TrainerT:
-            return self.GetTrainerActions(state)
+        try:
+            if self.agent_type == pb2.AgentType.PlayerT:
+                return self.GetPlayerActions(state)
+            elif self.agent_type == pb2.AgentType.CoachT:
+                return self.GetCoachActions(state)
+            elif self.agent_type == pb2.AgentType.TrainerT:
+                return self.GetTrainerActions(state)
+        except Exception as e:
+            self.logger.error(f"Error in GetAction: {e}")
+            import traceback
+            traceback.print_exc()
+            return pb2.PlayerActions()
         
     def GetPlayerActions(self, state: pb2.State):
-        actions = []
-        if state.world_model.game_mode_type == pb2.GameModeType.PlayOn:
-            if state.world_model.self.is_goalie:
-                actions.append(pb2.PlayerAction(helios_goalie=pb2.HeliosGoalie()))
-            elif state.world_model.self.is_kickable:
-                # First action has the highest priority
-                actions.append(pb2.PlayerAction(helios_shoot=pb2.HeliosShoot()))
-                actions.append(pb2.PlayerAction(helios_offensive_planner=pb2.HeliosOffensivePlanner(lead_pass=True,
-                                                                                  direct_pass=True,
-                                                                                  through_pass=True,
-                                                                                  simple_pass=True,
-                                                                                  short_dribble=True,
-                                                                                  long_dribble=True,
-                                                                                  simple_shoot=True,
-                                                                                  simple_dribble=True,
-                                                                                  cross=True,
-                                                                                  server_side_decision=False
-                                                                                  )))
-            else:
-                actions.append(pb2.PlayerAction(helios_basic_move=pb2.HeliosBasicMove()))
-        else:
-            actions.append(pb2.PlayerAction(helios_set_play=pb2.HeliosSetPlay()))
-        
-        self.logger.debug(f"Actions: {actions}")
-        return pb2.PlayerActions(actions=actions)
+        self.agent.update_actions(state.world_model)
+        res = pb2.PlayerActions()
+        res.actions.extend(self.agent.get_actions())
+        return res
     
     def GetBestPlannerAction(self, request: pb2.BestPlannerActionRequest) -> int:
         self.logger.debug(f"GetBestPlannerAction cycle:{request.state.world_model.cycle} pairs:{len(request.pairs)} unum:{request.state.register_response.uniform_number}")
@@ -77,42 +72,24 @@ class GrpcAgent:
         return res
     
     def GetCoachActions(self, state: pb2.State):
-        actions = []
-        actions.append(pb2.CoachAction(do_helios_substitute=pb2.DoHeliosSubstitute()))
-        return pb2.CoachActions(actions=actions)
+        self.agent.update_actions(state.world_model)
+        return pb2.CoachActions(actions=self.agent.get_actions())
     
     def GetTrainerActions(self, state: pb2.State):
-        actions = []
-        actions.append(
-            pb2.TrainerAction(
-                do_move_ball=pb2.DoMoveBall(
-                    position=pb2.RpcVector2D(
-                        x=0,
-                        y=0
-                    ),
-                    velocity=pb2.RpcVector2D(
-                        x=0,
-                        y=0
-                    ),
-                )
-            )
-        )
-        return pb2.TrainerActions(actions=actions)
+        self.agent.update_actions(state.world_model)
+        return pb2.TrainerActions(actions=self.agent.get_actions())
     
     def SetServerParams(self, server_params: pb2.ServerParam):
         self.logger.debug(f"Server params received unum {server_params.register_response.uniform_number}")
-        # self.logger.debug(f"Server params: {server_params}")
-        self.server_params = server_params
+        self.agent.set_server_params(server_params)
         
     def SetPlayerParams(self, player_params: pb2.PlayerParam):
         self.logger.debug(f"Player params received unum {player_params.register_response.uniform_number}")
-        # self.logger.debug(f"Player params: {player_params}")
-        self.player_params = player_params
+        self.agent.set_player_params(player_params)
         
     def SetPlayerType(self, player_type: pb2.PlayerType):
         self.logger.debug(f"Player type received unum {player_type.register_response.uniform_number}")
-        # self.logger.debug(f"Player type: {player_type}")
-        self.player_types[player_type.id] = player_type
+        self.agent.set_player_types(player_type)
         
 class GameHandler(pb2_grpc.GameServicer):
     def __init__(self, shared_lock, shared_number_of_connections) -> None:
