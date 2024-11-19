@@ -137,22 +137,28 @@ class GameHandler(pb2_grpc.GameServicer):
         return res
 
     def Register(self, register_request: pb2.RegisterRequest, context):
-        with self.shared_lock:
-            main_logger.info(f"received register request from team_name: {register_request.team_name} "
-                f"unum: {register_request.uniform_number} "
-                f"agent_type: {register_request.agent_type}")
-            self.shared_number_of_connections.value += 1
-            main_logger.info(f"Number of connections {self.shared_number_of_connections.value}")
-            team_name = register_request.team_name
-            uniform_number = register_request.uniform_number
-            agent_type = register_request.agent_type
-            register_response = pb2.RegisterResponse(client_id=self.shared_number_of_connections.value,
-                                    team_name=team_name,
-                                    uniform_number=uniform_number,
-                                    agent_type=agent_type)
-            logger = setup_logger(f"agent{register_response.uniform_number}_{register_response.client_id}", log_dir)
-            self.agents[self.shared_number_of_connections.value] = GrpcAgent(agent_type, uniform_number, logger)
-        return register_response
+        try:
+            with self.shared_lock:
+                main_logger.info(f"received register request from team_name: {register_request.team_name} "
+                    f"unum: {register_request.uniform_number} "
+                    f"agent_type: {register_request.agent_type}")
+                self.shared_number_of_connections.value += 1
+                main_logger.info(f"Number of connections {self.shared_number_of_connections.value}")
+                team_name = register_request.team_name
+                uniform_number = register_request.uniform_number
+                agent_type = register_request.agent_type
+                register_response = pb2.RegisterResponse(client_id=self.shared_number_of_connections.value,
+                                        team_name=team_name,
+                                        uniform_number=uniform_number,
+                                        agent_type=agent_type)
+                logger = setup_logger(f"agent{register_response.uniform_number}_{register_response.client_id}", log_dir)
+                self.agents[self.shared_number_of_connections.value] = GrpcAgent(agent_type, uniform_number, logger)
+            return register_response
+        except Exception as e:
+            main_logger.error(f"Error in Register: {e}")
+            import traceback
+            traceback.print_exc()
+            return pb2.RegisterResponse()
 
     def SendByeCommand(self, register_response: pb2.RegisterResponse, context):
         main_logger.debug(f"Bye command received unum {register_response.uniform_number}")
