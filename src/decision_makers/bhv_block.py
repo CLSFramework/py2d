@@ -36,6 +36,9 @@ class Bhv_Block:
                 - Calculate the first cycle that the agent or a teammate can block the ball.
                 - If the agent can block the ball, add a Body_GoToPoint action to the agent.
         """
+        from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
+        assert isinstance(agent, SamplePlayerAgent)
+        
         agent.logger.debug(f'------ Bhv_Block ------')
         wm = agent.wm
         sp = agent.server_params
@@ -46,6 +49,7 @@ class Bhv_Block:
         intercept_pos: Vector2D = inertia_n_step_point(current_ball_pos, current_ball_vel, opp_min, sp.ball_decay)
         target_pos = self._get_final_target(agent)
         dribble_vel = Vector2D.from_polar(self._get_average_dribble_speed(agent), (target_pos - intercept_pos).th())
+        home_pos_offside_line_x = agent.strategy.get_offside_line()
         
         future_ball_pos = intercept_pos
         
@@ -60,7 +64,14 @@ class Bhv_Block:
                 agent.logger.debug(f'Bhv_Block: False: future_ball_pos.abs_y() > sp.pitch_half_width')
                 return False
             
+            if wm.self.uniform_number <= 5:
+                # Defender should not block the ball if it is too far from the offside line
+                if future_ball_pos.x() > home_pos_offside_line_x + 10.0:
+                    continue
+                
             for our_player in wm.our_players_dict.values():
+                if our_player.is_goalie:
+                    continue
                 block_cycles = self._calculate_block_cycles(future_ball_pos, our_player)
                 if block_cycles <= cycle:
                     if wm.self.uniform_number == our_player.uniform_number:

@@ -118,3 +118,13 @@ class FormationStrategy(IPositionStrategy):
     
     def get_position(self, uniform_number):
         return self._poses[uniform_number]
+    
+    def get_offside_line(self):
+        home_poses_x = [pos.x() for pos in self._poses.values()]
+        home_poses_x.sort()
+        if len(home_poses_x) > 1:
+            return home_poses_x[1]
+        elif len(home_poses_x) == 1:
+            return home_poses_x[0]
+        else:
+            return 0.0
