@@ -16,7 +16,7 @@ class SamplePlayerAgent(IAgent, ABC):
         self.logger.debug(f'update_actions: {wm.cycle}')
         self.wm = wm
         self.actions.clear()
-        self.strategy.update(wm)
+        self.strategy.update(self)
         self.decision_maker.make_decision(self)
         self.logger.debug(f'actions: {self.actions}')
     
