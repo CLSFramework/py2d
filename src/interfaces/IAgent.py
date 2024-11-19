@@ -12,7 +12,7 @@ class IAgent(ABC):
         self.actions: list[Union[PlayerAction, CoachAction, TrainerAction]] = []
         self.server_params: Union[ServerParam, None] = None
         self.player_params: Union[PlayerParam, None] = None
-        self.player_types: Union[PlayerType, dict[PlayerType]] = {}
+        self.player_types: dict[PlayerType] = {}
         self.debug_mode: bool = False
         self.logger: logging.Logger= None
 
