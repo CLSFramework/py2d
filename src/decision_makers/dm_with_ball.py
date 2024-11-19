@@ -37,10 +37,10 @@ class WithBallDecisionMaker(IDecisionMaker):
         agent.logger.debug("--- WithBallDecisionMaker ---")
 
         agent.add_action(
-            PlayerAction(helios_offensive_planner=self._get_helios_offensive_planner())
+            PlayerAction(helios_offensive_planner=self._get_helios_offensive_planner(agent))
         )
 
-    def _get_helios_offensive_planner(self):
+    def _get_helios_offensive_planner(self, agent):
         """ Summary
         In this function you can create an instance of HeliosOffensivePlanner and set its attributes.
         The HeliosOffensivePlanner is a message that ask proxy to create a tree and find the best chain of actions and execute the first action of the chain.
@@ -48,7 +48,7 @@ class WithBallDecisionMaker(IDecisionMaker):
         Returns:
             _type_: HeliosOffensivePlanner
         """
-        res = HeliosOffensivePlanner()
+        res = HeliosOffensivePlanner(evaluation=self._get_planner_evaluation(agent))
         res.lead_pass = True
         res.direct_pass = True
         res.through_pass = True
@@ -58,7 +58,6 @@ class WithBallDecisionMaker(IDecisionMaker):
         res.simple_shoot = True
         res.simple_dribble = True
         res.cross = True
-        res.evaluation = self._get_planner_evaluation()
         
         return res
 
