@@ -1,4 +1,4 @@
-// version 1.7
+// version 1.8
 
 syntax = "proto3";
 
@@ -835,6 +835,9 @@ message Neck_TurnToRelative {
   float angle = 1;
 }
 
+message Neck_OffensiveInterceptNeck {
+}
+
 message View_ChangeWidth {
   ViewWidth view_width = 1;
 }
@@ -1284,6 +1287,11 @@ message HeliosPenalty {}
 
 message HeliosCommunicaion {}
 
+message HeliosBasicTackle {
+  float min_prob = 1;
+  float body_thr = 2;
+}
+
 message bhv_doForceKick {}
 
 message bhv_doHeardPassRecieve {}
@@ -1356,7 +1364,8 @@ message PlayerAction {
       HeliosCommunicaion helios_communication = 64;
       bhv_doForceKick bhv_do_force_kick = 65;
       bhv_doHeardPassRecieve bhv_do_heard_pass_recieve = 66;
-
+      HeliosBasicTackle helios_basic_tackle = 67;
+      Neck_OffensiveInterceptNeck neck_offensive_intercept_neck = 68;
   }
 }
 

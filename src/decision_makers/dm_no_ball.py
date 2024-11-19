@@ -34,6 +34,7 @@ class NoBallDecisionMaker(IDecisionMaker):
         Raises:
             AssertionError: If the agent is not an instance of SamplePlayerAgent.
         Actions:
+            - If can tackle the ball, the player will execute the helios basic tackle action and ignore other actions.
             - If no teammate can kick the ball and the agent can reach the ball within 3 steps or before any opponent:
                 - Adds Body_Intercept and Neck_TurnToBallOrScan actions to the agent.
             - If an opponent can reach the ball before the agent and teammates:
@@ -49,9 +50,11 @@ class NoBallDecisionMaker(IDecisionMaker):
         """
         from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
         assert isinstance(agent, SamplePlayerAgent)
-        # Do tackle TODO: Add Bhv_BasicTackle into idls
+        
         agent.logger.debug(f'------ NoBallDecisionMaker ------')
         wm: WorldModel = agent.wm
+        
+        agent.add_action(PlayerAction(helios_basic_tackle=HeliosBasicTackle(min_prob=0.8, body_thr=100.0)))
         
         self_min = wm.intercept_table.self_reach_steps
         opp_min = wm.intercept_table.first_opponent_reach_steps
@@ -59,7 +62,7 @@ class NoBallDecisionMaker(IDecisionMaker):
         
         if not wm.kickable_teammate_existance and (self_min <= 3 or (self_min <= tm_min and self_min < opp_min + 3)):
             agent.add_action(PlayerAction(body_intercept=Body_Intercept()))
-            agent.add_action(PlayerAction(neck_turn_to_ball_or_scan=Neck_TurnToBallOrScan())) # TODO: Add Neck_OffensiveInterceptNeck into idls
+            agent.add_action(PlayerAction(neck_offensive_intercept_neck=Neck_OffensiveInterceptNeck()))
             
             agent.logger.debug(f'NoBallDecisionMaker: Body_Intercept')
             return
