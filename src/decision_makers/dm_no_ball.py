@@ -70,7 +70,7 @@ class NoBallDecisionMaker(IDecisionMaker):
                 return
             
         target_point = agent.strategy.get_position(wm.self.uniform_number)
-        dash_power = 100.0 #TODO: Add dash power calculation
+        dash_power = self.get_normal_dash_power(agent)
         
         ball_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)
         self_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.self.position)
@@ -92,4 +92,58 @@ class NoBallDecisionMaker(IDecisionMaker):
             
         agent.logger.debug(f'NoBallDecisionMaker: Body_GoToPoint {target_point} {dash_power} {dist_thr} or Body_TurnToBall')
         
+    
+    def get_normal_dash_power(self, agent: IAgent) -> float:
+        """
+        Get the normal dash power for the agent based on the current world model state.
+        This method calculates the normal dash power for the agent based on the stamina level, ball position, and other factors.
+        Args:
+            agent (IAgent): The agent for which the dash power is being calculated
+        Returns:
+            float: The normal dash power for the agent.
+        """
+        wm = agent.wm
+        self.s_recover_mode = False
         
+        player_type: PlayerType = agent.player_types[wm.self.type_id]
+        sp: ServerParam = agent.server_params
+        
+        if wm.self.stamina_capacity < 0.01:
+            return min(sp.max_dash_power, wm.self.stamina + player_type.extra_stamina)
+        
+        self_min = wm.intercept_table.self_reach_steps
+        mate_min = wm.intercept_table.first_teammate_reach_steps
+        opp_min = wm.intercept_table.first_opponent_reach_steps
+        
+        if wm.self.stamina_capacity < 0.01:
+            self.s_recover_mode = False
+        elif wm.self.stamina < sp.stamina_max * 0.5:
+            self.s_recover_mode = True
+        elif wm.self.stamina > sp.stamina_max * 0.7:
+            self.s_recover_mode = False
+        
+        dash_power = sp.max_dash_power
+        my_inc = player_type.stamina_inc_max * wm.self.recovery
+        
+        if wm.our_defense_line_x > wm.self.position.x and wm.ball.position.x < wm.our_defense_line_x + 20.0:
+            agent.logger.debug(f'NoBallDecisionMaker: correct DF line. keep max power')
+            dash_power = sp.max_dash_power
+        elif self.s_recover_mode:
+            dash_power = my_inc - 25.0
+            if dash_power < 0.0:
+                dash_power = 0.0
+            agent.logger.debug(f'NoBallDecisionMaker: recovering')
+        elif wm.kickable_teammate_existance and wm.ball.dist_from_self < 20.0:
+            dash_power = min(my_inc * 1.1, sp.max_dash_power)
+            agent.logger.debug(f'NoBallDecisionMaker: exist kickable teammate. dash_power={dash_power}')
+        elif wm.self.position.x > wm.offside_line_x:
+            dash_power = sp.max_dash_power
+            agent.logger.debug(f'NoBallDecisionMaker: in offside area. dash_power={dash_power}')
+        elif wm.ball.position.x > 25.0 and wm.ball.position.x > wm.self.position.x + 10.0 and self_min < opp_min - 6 and mate_min < opp_min - 6:
+            dash_power = bound(sp.max_dash_power * 0.1, my_inc * 0.5, sp.max_dash_power)
+            agent.logger.debug(f'NoBallDecisionMaker: opponent ball dash_power={dash_power}')
+        else:
+            dash_power = min(my_inc * 1.7, sp.max_dash_power)
+            agent.logger.debug(f'NoBallDecisionMaker: normal mode dash_power={dash_power}')
+            
+        return dash_power
