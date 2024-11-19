@@ -8,13 +8,13 @@ class FormationType(Enum):
     DelaunayTriangulation2 = 'D'
 
 
-class Formation:
+class FormationFile:
     def __init__(self, path):
         self._balls = []
         self._players = []
         self._triangles = []
         self._formation_type = FormationType.Static
-        self._target_players = []
+        self._target_players = {}
         self._path = path
         self.read_file(path)
         self.calculate()
@@ -34,7 +34,7 @@ class Formation:
             if i == 0 or lines[i].startswith('#'):
                 continue
             player = lines[i].split()
-            self._target_players.append(Vector2D(float(player[2]), float(player[3])))
+            self._target_players[i + 1] = Vector2D(float(player[2]), float(player[3]))
 
     def read_delaunay(self, lines):
         for i in range(len(lines)):
@@ -101,10 +101,10 @@ class Formation:
             OB = (OI - OPa)
             OB *= (m2 / (m2 + n2))
             OB += OPa
-            self._target_players.append(OB)
+            self._target_players[p + 1] = OB
 
     def get_pos(self, unum):
-        return self._target_players[unum - 1]
+        return self._target_players[unum]
 
     def get_poses(self):
         return self._target_players
