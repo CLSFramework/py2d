@@ -77,7 +77,7 @@ if __name__ == "__main__":
                 s.bind(('localhost', 0))
                 args.rpc_port = str(s.getsockname()[1])
                 
-        if args.use_random_team:
+        if args.use_random_name:
             import random
             import string
             args.team_name = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
