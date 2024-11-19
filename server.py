@@ -17,6 +17,8 @@ from src.sample_trainer_agent import SampleTrainerAgent
 
 console_logging_level = logging.INFO
 file_logging_level = logging.DEBUG
+player_console_logging_level = logging.INFO
+player_file_logging_level = logging.DEBUG
 
 main_logger = None
 log_dir = None
@@ -151,7 +153,8 @@ class GameHandler(pb2_grpc.GameServicer):
                                         team_name=team_name,
                                         uniform_number=uniform_number,
                                         agent_type=agent_type)
-                logger = setup_logger(f"agent{register_response.uniform_number}_{register_response.client_id}", log_dir)
+                logger = setup_logger(f"agent{register_response.uniform_number}_{register_response.client_id}", log_dir, 
+                                      console_level=player_console_logging_level, file_level=player_file_logging_level)
                 self.agents[self.shared_number_of_connections.value] = GrpcAgent(agent_type, uniform_number, logger)
             return register_response
         except Exception as e:
