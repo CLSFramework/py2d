@@ -1,4 +1,3 @@
-# from pyparsing import col
 from src.interfaces.IDecisionMaker import IDecisionMaker
 from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
@@ -7,16 +6,81 @@ from service_pb2 import *
 
 
 class WithBallDecisionMaker(IDecisionMaker):
+    """
+    Decision maker class for an agent with the ball.
+
+    Methods
+    -------
+    __init__():
+        Initializes the WithBallDecisionMaker instance.
+
+    make_decision(agent: IAgent):
+        Makes a decision for the agent when it has the ball.
+        
+    _get_helios_offensive_planner():
+        Returns an instance of HeliosOffensivePlanner.
+        
+    _get_planner_evaluation(agent: IAgent):
+        Returns an instance of PlannerEvaluation.
+        
+    _get_planner_evaluation_effector(agent: IAgent):
+        Returns an instance of PlannerEvaluationEffector.
+        
+    _get_opponent_effector(agent: IAgent):
+        Determines the opponent effector based on the agent's world model.
+    """
+
     def __init__(self):
         pass
-    
+
     def make_decision(self, agent: IAgent):
-        agent.add_action(PlayerAction(helios_offensive_planner=HeliosOffensivePlanner(lead_pass=True,
-                                                                                  direct_pass=True,
-                                                                                  through_pass=True,
-                                                                                  simple_pass=True,
-                                                                                  short_dribble=True,
-                                                                                  long_dribble=True,
-                                                                                  simple_shoot=True,
-                                                                                  simple_dribble=True,
-                                                                                  cross=True)))
+        agent.logger.debug("--- WithBallDecisionMaker ---")
+
+        agent.add_action(
+            PlayerAction(helios_offensive_planner=self._get_helios_offensive_planner())
+        )
+
+    def _get_helios_offensive_planner(self):
+        """ Summary
+        In this function you can create an instance of HeliosOffensivePlanner and set its attributes.
+        The HeliosOffensivePlanner is a message that ask proxy to create a tree and find the best chain of actions and execute the first action of the chain.
+
+        Returns:
+            _type_: HeliosOffensivePlanner
+        """
+        res = HeliosOffensivePlanner()
+        res.lead_pass = True
+        res.direct_pass = True
+        res.through_pass = True
+        res.simple_pass = True
+        res.short_dribble = True
+        res.long_dribble = True
+        res.simple_shoot = True
+        res.simple_dribble = True
+        res.cross = True
+        res.evaluation = self._get_planner_evaluation()
+        
+        return res
+
+    def _get_planner_evaluation(self, agent: IAgent):
+        return PlannerEvaluation(
+            effectors=self._get_planner_evaluation_effector(agent),
+        )
+
+    def _get_planner_evaluation_effector(self, agent: IAgent):
+        return PlannerEvaluationEffector(
+            opponent_effector=self._get_opponent_effector(agent),
+        )
+
+    def _get_opponent_effector(self, agent: IAgent):
+        wm = agent.wm
+
+        if wm.ball.position.x > 30:
+            negetive_effect_by_distance = [-5, -4, -3, -2, -1]
+        else:
+            negetive_effect_by_distance = [-30, -25, -20, -15, -10, -4, -3, -2, -1]
+
+        return OpponentEffector(
+            negetive_effect_by_distance=negetive_effect_by_distance,
+            negetive_effect_by_distance_based_on_first_layer=False,
+        )
