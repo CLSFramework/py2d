@@ -27,7 +27,7 @@ def run_server_script(args):
 def run_start_script(args):
     # Start the start.sh script in its own directory as a new process group
     process = subprocess.Popen(
-        ['bash', 'start.sh' if not args.debug else 'start-debug.sh', '-t', args.team_name, '--rpc-port', args.rpc_port, '--rpc-type', 'grpc'],
+        ['bash', 'start.sh' if not args.debug else 'start-debug.sh', '-t', args.team_name, '--rpc-port', args.rpc_port, '--rpc-type', 'grpc', '-p', args.server_port],
         cwd='scripts/proxy',  # Corrected directory to where start.sh is located
         preexec_fn=os.setsid,  # Create a new session and set the process group ID
         stdout=subprocess.PIPE,
@@ -61,12 +61,26 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--team_name', required=False, help='The name of the team', default='CLS')
     parser.add_argument('--rpc-port', required=False, help='The port of the server', default='50051')
     parser.add_argument('-d', '--debug', required=False, help='Enable debug mode', default=False, action='store_true')
+    parser.add_argument('--use-random-port', required=False, help='Use a random port for the server', default=False, action='store_true')
+    parser.add_argument('--use-random-name', required=False, help='Use a random team name', default=False, action='store_true')
+    parser.add_argument('--server-port', required=False, help='The port of the server', default='6000')
     args = parser.parse_args()
     
     try:
         # Check Python requirements
         start_team_logger.debug("Checking Python requirements...")
         check_requirements.check_requirements()
+        
+        if args.use_random_port:
+            import socket
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', 0))
+                args.rpc_port = str(s.getsockname()[1])
+                
+        if args.use_random_team:
+            import random
+            import string
+            args.team_name = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
         
         # Run the server.py script first
         server_process = run_server_script(args)
