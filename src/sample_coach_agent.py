@@ -13,8 +13,12 @@ class SampleCoachAgent(IAgent, ABC):
         self.logger.debug(f'update_actions: {wm.cycle}')
         self.wm = wm
         
-        actions = CoachActions()
-        actions.actions = []
+        self.actions.clear()
+        self.add_action(CoachAction(
+            do_helios_substitute=DoHeliosSubstitute()
+        ))
+        # actions = CoachActions()
+        # actions.actions = []
         # if (wm.cycle == 0
         #     and self.first_substitution
         #     and self.playerParams is not None
@@ -36,8 +40,8 @@ class SampleCoachAgent(IAgent, ABC):
         #         do_helios_substitute=DoHeliosSubstitute()
         #     )
         # )
-        self.add_action(CoachAction(
-            do_helios_substitute=DoHeliosSubstitute()
-        ))
+        # self.add_action(CoachAction(
+        #     do_helios_substitute=DoHeliosSubstitute()
+        # ))
         
         self.logger.debug(f'actions: {self.actions}')
