@@ -58,7 +58,7 @@ class FormationStrategy(IPositionStrategy):
         ball_pos = inertia_n_step_point(current_ball_pos, current_ball_vel, all_min, 0.96) #todo use server param ball decay
         
 
-        if True: #todo wm.game_mode().type() is GameModeType.PlayOn:
+        if wm.game_mode_type is GameModeType.PlayOn:
             thr = 0
             if ball_pos.x() > 0:
                 thr += 1
@@ -68,54 +68,47 @@ class FormationStrategy(IPositionStrategy):
                 self.current_situation = Situation.Offense_Situation
             else:
                 self.current_situation = Situation.Defense_Situation
+        elif wm.game_mode_type is GameModeType.PenaltyKick_:
+            self.current_situation = Situation.PenaltyKick_Situation
+        elif wm.game_mode_type is not GameModeType.PlayOn and wm.game_mode_side is wm.our_side:
+            self.current_situation = Situation.OurSetPlay_Situation
         else:
-            pass
-            # if wm.game_mode().is_penalty_kick_mode():
-            #     self.current_situation = Situation.PenaltyKick_Situation
-            # elif wm.game_mode().is_our_set_play(wm.our_side()):
-            #     self.current_situation = Situation.OurSetPlay_Situation
-            # else:
-            #     self.current_situation = Situation.OppSetPlay_Situation
+            self.current_situation = Situation.OppSetPlay_Situation
 
-        if True: #ToDo wm.game_mode().type() is GameModeType.PlayOn:
-            if self.current_situation is Situation.Offense_Situation:
-                self.current_formation_file = self._get_current_formation().offense_formation
+        if self.current_situation is Situation.Offense_Situation:
+            self.current_formation_file = self._get_current_formation().offense_formation
+        elif self.current_situation is Situation.Defense_Situation:
+            self.current_formation_file = self._get_current_formation().defense_formation
+        elif wm.game_mode_type in [GameModeType.KickIn_, GameModeType.CornerKick_]:
+            if wm.game_mode_side is wm.our_side:
+                self.current_formation_file = self._get_current_formation().kickin_our_formation
             else:
-                self.current_formation_file = self._get_current_formation().defense_formation
-
-        # elif wm.game_mode().type() in [GameModeType.BeforeKickOff, GameModeType.AfterGoal_Left,
-        #                                GameModeType.AfterGoal_Right]:
-        #     self.current_formation_file = self.before_kick_off_formation
-
-        # elif wm.game_mode().type() in [GameModeType.GoalKick_Left, GameModeType.GoalKick_Right, GameModeType.GoalieCatchBall_Left, GameModeType.GoalieCatchBall_Right]: # Todo add Goal Catch!!
-        #     if wm.game_mode().is_our_set_play(wm.our_side()):
-        #         self.current_formation_file = self.goalie_kick_our_formation
-        #     else:
-        #         self.current_formation_file = self.goalie_kick_opp_formation
-
-        # else:
-        #     if wm.game_mode().is_our_set_play(wm.our_side()):
-        #         if wm.game_mode().type() in [GameModeType.KickIn_Right, GameModeType.KickIn_Left,
-        #                                      GameModeType.CornerKick_Right, GameModeType.CornerKick_Left]:
-        #             self.current_formation_file = self.kickin_our_formation
-        #         else:
-        #             self.current_formation_file = self.setplay_our_formation
-        #     else:
-        #         self.current_formation_file = self.setplay_opp_formation
+                self.current_formation_file = self._get_current_formation().setplay_opp_formation
+        elif wm.game_mode_type in [GameModeType.GoalKick_, GameModeType.GoalieCatch_]:
+            if wm.game_mode_side is wm.our_side:
+                self.current_formation_file = self._get_current_formation().goalie_kick_our_formation
+            else:
+                self.current_formation_file = self._get_current_formation().goalie_kick_opp_formation
+        elif wm.game_mode_type in [GameModeType.BeforeKickOff, GameModeType.AfterGoal_]:
+            self.current_formation_file = self._get_current_formation().before_kick_off_formation
+        elif self.current_situation is Situation.OppSetPlay_Situation:
+            self.current_formation_file = self._get_current_formation().setplay_opp_formation
+        elif self.current_situation is Situation.OurSetPlay_Situation:
+            self.current_formation_file = self._get_current_formation().setplay_our_formation
 
         self.current_formation_file.update(ball_pos)
         self._poses = self.current_formation_file.get_poses()
 
+        if wm.game_mode_type in [GameModeType.BeforeKickOff, GameModeType.AfterGoal_]:
+            for pos in self._poses.values():
+                pos._x = min(pos.x(), -0.5)
+        else:
+            offside_line = wm.offside_line_x
+            for pos in self._poses.values():
+                pos._x = min(pos.x(), offside_line - 0.5)
+                
         logger.debug(f'{self._poses=}')
-        # if self.current_formation_file is self.before_kick_off_formation or wm.game_mode().type() in \
-        #         [GameModeType.KickOff_Left, GameModeType.KickOff_Right]:
-        #     for pos in self._poses:
-        #         pos._x = min(pos.x(), -0.5)
-        # else:
-        #     pass # Todo add offside line
-        #     # for pos in self._poses:
-        #     #     pos._x = math.min(pos.x(), )
-    
+        
     def get_position(self, uniform_number):
         return self._poses[uniform_number]
     
