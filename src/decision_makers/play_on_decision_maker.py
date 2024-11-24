@@ -1,7 +1,7 @@
 from src.interfaces.IDecisionMaker import IDecisionMaker
 from src.interfaces.IAgent import IAgent
-from .dm_with_ball import WithBallDecisionMaker
-from .dm_no_ball import NoBallDecisionMaker
+from .kick_decision_maker import WithBallDecisionMaker
+from .move_decision_maker import NoBallDecisionMaker
 
 
 class PlayOnDecisionMaker(IDecisionMaker):
