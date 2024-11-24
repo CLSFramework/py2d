@@ -1,13 +1,13 @@
 from src.interfaces.IDecisionMaker import IDecisionMaker
 from src.interfaces.IAgent import IAgent
-from .kick_decision_maker import WithBallDecisionMaker
-from .move_decision_maker import NoBallDecisionMaker
+from src.decision_makers.kick_decision_maker import KickDecisionMaker
+from src.decision_makers.move_decision_maker import MoveDecisionMaker
 
 
 class PlayOnDecisionMaker(IDecisionMaker):
     def __init__(self):
-        self.with_ball_decision_maker = WithBallDecisionMaker()
-        self.no_ball_decision_maker = NoBallDecisionMaker()
+        self.with_ball_decision_maker = KickDecisionMaker()
+        self.no_ball_decision_maker = MoveDecisionMaker()
         pass
     
     def make_decision(self, agent: IAgent):

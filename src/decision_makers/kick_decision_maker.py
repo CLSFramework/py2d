@@ -5,7 +5,7 @@ from pyrusgeom.geom_2d import *
 from service_pb2 import *
 
 
-class WithBallDecisionMaker(IDecisionMaker):
+class KickDecisionMaker(IDecisionMaker):
     """
     Decision maker class for an agent with the ball.
 

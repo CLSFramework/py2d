@@ -4,10 +4,10 @@ from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *
 from src.utils.convertor import Convertor
-from src.decision_makers.bhv_block import Bhv_Block
+from src.behaviors.bhv_block import Bhv_Block
 
 
-class NoBallDecisionMaker(IDecisionMaker):
+class MoveDecisionMaker(IDecisionMaker):
     """
     A decision maker class for an agent when it does not have the ball.
     Methods
