@@ -6,7 +6,7 @@ import logging
 
 
 class IAgent(ABC):
-    def __init__(self) -> None:
+    def __init__(self, logger) -> None:
         super().__init__()
         self.wm: Union[WorldModel, None] = None
         self.actions: list[Union[PlayerAction, CoachAction, TrainerAction]] = []
@@ -14,7 +14,7 @@ class IAgent(ABC):
         self.player_params: Union[PlayerParam, None] = None
         self.player_types: dict[PlayerType] = {}
         self.debug_mode: bool = False
-        self.logger: logging.Logger= None
+        self.logger: logging.Logger = logger
 
     def set_server_params(self, server_param: ServerParam):
         self.server_params = server_param
@@ -88,7 +88,3 @@ class IAgent(ABC):
         
     def get_actions(self) -> list[Union[PlayerAction, CoachAction, TrainerAction]]:
         return self.actions
-
-    def set_logger(self, logger):
-        self.logger = logger
-        self.logger.debug(f"IAgent.set_logger: {logger}")

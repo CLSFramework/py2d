@@ -16,9 +16,9 @@ from src.sample_trainer_agent import SampleTrainerAgent
 
 
 console_logging_level = logging.INFO
-file_logging_level = logging.DEBUG
+file_logging_level = logging.INFO
 player_console_logging_level = logging.INFO
-player_file_logging_level = logging.DEBUG
+player_file_logging_level = logging.INFO
 
 main_logger = None
 log_dir = None
@@ -31,12 +31,11 @@ class GrpcAgent:
         self.agent: IAgent = None
         self.logger: logging.Logger = logger
         if self.agent_type == pb2.AgentType.PlayerT:
-            self.agent = SamplePlayerAgent()
+            self.agent = SamplePlayerAgent(self.logger)
         elif self.agent_type == pb2.AgentType.CoachT:
-            self.agent = SampleCoachAgent()
+            self.agent = SampleCoachAgent(self.logger)
         elif self.agent_type == pb2.AgentType.TrainerT:
-            self.agent = SampleTrainerAgent()
-        self.agent.set_logger(self.logger)
+            self.agent = SampleTrainerAgent(self.logger)
         self.debug_mode: bool = False
         
     
@@ -189,13 +188,20 @@ def serve(port, shared_lock, shared_number_of_connections):
     
 
 def main():
-    global main_logger, log_dir
+    global main_logger, log_dir, file_logging_level, player_file_logging_level
     parser = argparse.ArgumentParser(description='Run play maker server')
     parser.add_argument('-p', '--rpc-port', required=False, help='The port of the server', default=50051)
     parser.add_argument('-l', '--log-dir', required=False, help='The directory of the log file', 
                         default=f'logs/{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
+    parser.add_argument('--disable-log-file', required=False, help='Disable logging to a file', default=False, action='store_true')
+    
     args = parser.parse_args()
+    
     log_dir = args.log_dir
+    if args.disable_log_file:
+        file_logging_level = None
+        player_file_logging_level = None
+        
     main_logger = setup_logger("pmservice", log_dir, console_level=console_logging_level, file_level=file_logging_level)
     main_logger.info("Starting server")
     manager = Manager()

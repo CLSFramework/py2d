@@ -1,0 +1,23 @@
+#!/bin/sh
+
+HOST=$1
+BASEDIR=$2
+NUM=$3
+
+teamname="CLSF"
+
+cd $BASEDIR
+
+options="--team_name $teamname --server-host $HOST --use-random-port --close-server --disable_log_file"
+
+case $NUM in
+    1)
+        ./start_agent.bin $options --goalie
+        ;;
+    12)
+        ./start_agent.bin $options --coach
+        ;;
+    *)
+        ./start_agent.bin $options
+        ;;
+esac

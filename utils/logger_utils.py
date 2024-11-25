@@ -15,7 +15,7 @@ def setup_logger(name, log_dir, console_level=logging.INFO, file_level=logging.D
     have_console_handler = console_level is not None
     have_file_handler = file_level is not None
     
-    if not os.path.exists(log_dir):
+    if have_file_handler and not os.path.exists(log_dir):
         os.makedirs(log_dir)
         
     log_file = os.path.join(log_dir, f'{name}.log')

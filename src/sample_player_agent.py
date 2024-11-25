@@ -6,8 +6,9 @@ from service_pb2 import *
 
 
 class SamplePlayerAgent(IAgent, ABC):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, logger) -> None:
+        super().__init__(logger)
+        self.logger.info('SamplePlayerAgent created')
         self.decision_maker = DecisionMaker()
         self.strategy = FormationStrategy()
         self.wm: WorldModel = None

@@ -4,3 +4,4 @@ scripts/rcssserver
 logs/
 __pycache__/
 utils/__pycache__/
+scripts/binary/

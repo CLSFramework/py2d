@@ -4,8 +4,9 @@ from service_pb2 import *
 
 
 class SampleTrainerAgent(IAgent, ABC):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, logger) -> None:
+        super().__init__(logger)
+        self.logger.info('SampleTrainerAgent created')
         self.wm: WorldModel = None
         self.first_substitution = True
     
