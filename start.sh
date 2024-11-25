@@ -6,6 +6,7 @@ server_host=127.0.0.1
 server_port=6000
 disable_log_file=false
 run_bin=false
+separate_rpc_server=false
 
 while [ $# -gt 0 ]
 do
@@ -23,6 +24,9 @@ do
       ;;
     --run-bin)
       run_bin=true
+      ;;
+    --separate-rpc-server)
+      separate_rpc_server=true
       ;;
     *)
       echo 1>&2
@@ -65,28 +69,33 @@ else
   options="$options --disable-log-file"
 fi
 
-# Run start_agent.py or start_agent.bin
+# Run start.py or start.bin
 if [ $run_bin = true ]; then
-  run_command="./start_agent.bin"
+  run_command="./start.bin"
 else
   # active .venv
   source $python_env
-  run_command="python3 start_agent.py"
+  run_command="python3 start.py"
 fi
 
-# Run start_agent.py 11 times and store each PID in the array
-$run_command $options --goalie &
-pids+=($!)
+if [ $separate_rpc_server = true ]; then
+  # Run start_agent.py 11 times and store each PID in the array
+  $run_command $options --goalie &
+  pids+=($!)
 
-sleep 2
+  sleep 2
 
-for i in {2..11}; do
+  for i in {2..11}; do
+    $run_command $options --player &
+    pids+=($!)
+  done
+
+  $run_command $options --coach &
+  pids+=($!)
+else
   $run_command $options &
   pids+=($!)
-done
-
-$run_command $options --coach &
-pids+=($!)
+fi
 
 # Wait for all background processes to finish
 for pid in "${pids[@]}"; do

@@ -1,11 +1,13 @@
-# Sample Python Base Code (gRPC)
+# PY2D Soccer Simulation Base Code
 
 [![Documentation Status](https://readthedocs.org/projects/clsframework/badge/?version=latest)](https://clsframework.github.io/docs/introduction/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository contains a sample decision-making server for the RoboCup 2D Soccer Simulation, which allows you to create a team by using Python. This server is compatible with the [Cross Language Soccer Framework](https://arxiv.org/pdf/2406.05621). This server is written in Python and uses gRPC to communicate with the [proxy](https://github.com/CLSFramework/soccer-simulation-proxy).
-
-The Soccer Simulation Server sends the observations to the proxy, which processes the data, create state message and sends it to the decision-making server. The decision-making server then sends the actions to the proxy, and then the proxy convert actions to the server commands and sends them to the server.
+![alt text](image.png)
+PY2D Soccer Simulation Base Code is a base code for RoboCup 2D Soccer Simulation teams, which is written in Python.
+This base code is powered by the [Cross Language Soccer Framework](https://arxiv.org/pdf/2406.05621), which allows you to create a team by using any programming language that supports gRPC or Thrift.
+This base code uses `Helios Base` as a proxy to communicate with the RoboCup 2D Soccer Simulation server.
+PY2D base is the most power full base code for RoboCup 2D Soccer Simulation which developed in Python.
 
 For more information, please refer to the [documentation](https://clsframework.github.io/).
 
@@ -24,8 +26,8 @@ sudo apt-get install fuse #Used to run AppImages
 Clone this repository & install the required python libraries (such as gRPC). Don't forget to activate your virtual environment!
 
 ``` Bash
-git clone https://github.com/CLSFramework/sample-playmaker-server-python-grpc.git
-cd sample-playmaker-server-python-grpc
+git clone https://github.com/CLSFramework/py2d.git
+cd py2d
 # Activate venv/anaconda before this step!
 pip install -r requirements.txt
 
@@ -63,7 +65,9 @@ cd scripts/rcssserver
 Then we must run the proxy & the decisionmaking server:
 
 ``` Bash
-./start-team.sh
+./start.sh
+// or
+python3 start.py
 ```
 
 ### Options

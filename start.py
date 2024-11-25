@@ -11,17 +11,17 @@ import multiprocessing
 from server import main
 import random
 
-
 # Set up logging
 log_dir = None
 start_team_logger = None
-
 
 def run_server_script(args):
     # Define a wrapper function to pass the arguments to the main function
     def server_main():
         import sys
-        sys.argv = ['server.py', '--rpc-port', str(args.rpc_port), '--log-dir', log_dir, '--disable-log-file' if args.disable_log_file else '']
+        sys.argv = ['server.py', '--rpc-port', str(args.rpc_port), '--log-dir', log_dir]
+        if args.disable_log_file:
+            sys.argv += ['--disable-log-file']
         main()
 
     # Start the main function as a new process
@@ -31,12 +31,18 @@ def run_server_script(args):
 
 def run_start_script(args):
     # Start the start.sh script in its own directory as a new process group
-    process = subprocess.Popen(
-        ['bash', 'start-agent.sh' if not args.debug else 'start-debug.sh', 
-         '-t', args.team_name, 
+    arguments = ['bash']
+    if args.player or args.coach or args.goalie:
+        arguments += ['start-agent.sh', '--coach' if args.coach else '--goalie' if args.goalie else '--player']
+    else:
+        arguments += ['start.sh' if not args.debug else 'start-debug.sh']
+        
+    arguments += ['-t', args.team_name, 
          '--rpc-port', args.rpc_port, '--rpc-type', 'grpc', 
-         '-p', args.server_port, '-h', args.server_host,
-         '--coach' if args.coach else '--goalie' if args.goalie else '--player'],
+         '-p', args.server_port, '-h', args.server_host]
+        
+    process = subprocess.Popen(
+        arguments,
         cwd='scripts/proxy',  # Corrected directory to where start.sh is located
         preexec_fn=os.setsid,  # Create a new session and set the process group ID
         stdout=subprocess.PIPE,
@@ -45,7 +51,6 @@ def run_start_script(args):
     return process
 
 stop_thread = threading.Event()
-
 
 def stream_output_to_file(process, name, args):
     # Stream output from the process and log it to a file with the given name
@@ -88,6 +93,7 @@ if __name__ == "__main__":
     parser.add_argument('--server-host', required=False, help='The host of the server', default='localhost')
     parser.add_argument('--server-port', required=False, help='The port of the server', default='6000')
     parser.add_argument('--close-server', required=False, help='Close the server', default=False, action='store_true')
+    parser.add_argument('--player', required=False, help='Use coach instead of proxy', default=False, action='store_true')
     parser.add_argument('--coach', required=False, help='Use coach instead of proxy', default=False, action='store_true')
     parser.add_argument('--goalie', required=False, help='Use goalie instead of proxy', default=False, action='store_true')
     parser.add_argument('--disable-log-file', required=False, help='Disable logging to a file', default=False, action='store_true')
@@ -99,9 +105,8 @@ if __name__ == "__main__":
         log_dir = os.path.join(os.getcwd(), 'logs', f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_{random.randint(100000, 999999)}")
     else:
         log_dir = args.log_dir
-    start_team_logger = setup_logger('start-team', log_dir, console_level=logging.DEBUG, file_level=logging.DEBUG if not args.disable_log_file else None,
-                                     console_format_str='%(message)s')
-    
+    start_team_logger = setup_logger('start-team', log_dir, console_level=logging.DEBUG, file_level=logging.DEBUG if not args.disable_log_file else None, console_format_str='%(message)s')
+
     start_team_logger.debug(f"Arguments: {args=}")
     
     try:

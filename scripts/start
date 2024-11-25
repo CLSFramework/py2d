@@ -12,12 +12,12 @@ options="--team_name $teamname --server-host $HOST --use-random-port --close-ser
 
 case $NUM in
     1)
-        ./start_agent.bin $options --goalie
+        ./start.bin $options --goalie
         ;;
     12)
-        ./start_agent.bin $options --coach
+        ./start.bin $options --coach
         ;;
     *)
-        ./start_agent.bin $options
+        ./start.bin $options --player
         ;;
 esac

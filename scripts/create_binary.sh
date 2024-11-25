@@ -24,21 +24,22 @@ cp -r ../src/formations binary/src/formations
 
 # create binary
 
-nuitka --standalone --onefile --output-dir=binary ../start_agent.py
+nuitka --standalone --onefile --output-dir=binary ../start.py
 
 # remove build directory
 
-rm -rf binary/start_agent.build
-rm -rf binary/start_agent.dist
-rm -rf binary/start_agent.onefile-build
+rm -rf binary/start.build
+rm -rf binary/start.dist
+rm -rf binary/start.onefile-build
 
-# copy start_agents.sh to binary directory
+# copy start.sh to binary directory
 
-cp ../start_agents.sh binary/start_agents.sh
+cp ../start.sh binary/start.sh
 
-# change all `python3 start_agent.py`` to ./start_agent.bin in binary/start_agents.sh
+# change start.sh to run binary instead of python and to use separate rpc server
 
-sed -i 's/run_bin=false/run_bin=true/g' binary/start_agents.sh
+sed -i 's/run_bin=false/run_bin=true/g' binary/start.sh
+sed -i 's/separate_rpc_server=false/separate_rpc_server=true/g' binary/start.sh
 
 # copy start to binary directory
 
