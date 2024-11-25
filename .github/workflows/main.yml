@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'readme.md'
+      - 'README.md'
 
 jobs:
   update-docs:
@@ -22,10 +22,10 @@ jobs:
 
       - name: Check if README was updated
         run: |
-          if git diff --name-only HEAD^ HEAD | grep 'readme.md'; then
-            echo "readme.md has changed"
+          if git diff --name-only HEAD^ HEAD | grep 'README.md'; then
+            echo "README.md has changed"
           else
-            echo "readme.md has not changed" && exit 0
+            echo "README.md has not changed" && exit 0
           fi
 
       - name: Generate random number for branch name
@@ -38,10 +38,10 @@ jobs:
           cd cls-repo
           
           # Copy updated README to target directory in the CLSFramework.github.io repository
-          cp ../readme.md docs/6-basecode/py2d/index.md
+          cp ../README.md docs/6-basecode/py2d/index.md
 
           # Create a new branch with a random number appended
-          git checkout -b update-readme-py2d-${{ steps.random.outputs.random_number }}
+          git checkout -b update-README-py2d-${{ steps.random.outputs.random_number }}
 
       - name: Add front matter to index.md before committing
         run: |
@@ -59,12 +59,12 @@ jobs:
           cd cls-repo
           git add docs/6-basecode/py2d/index.md
           git commit -m "Update py2d documentation from README"
-          git push origin update-readme-py2d-${{ steps.random.outputs.random_number }}
+          git push origin update-README-py2d-${{ steps.random.outputs.random_number }}
 
       - name: Create Pull Request in CLSFramework.github.io using GitHub API
         run: |
           PR_RESPONSE=$(curl -X POST -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/CLSFramework/CLSFramework.github.io/pulls \
-            -d '{"title":"Update py2d documentation","head":"update-readme-py2d-${{ steps.random.outputs.random_number }}","base":"main","body":"This PR updates the py2d documentation based on changes made in README.md."}')
+            -d '{"title":"Update py2d documentation","head":"update-README-py2d-${{ steps.random.outputs.random_number }}","base":"main","body":"This PR updates the py2d documentation based on changes made in README.md."}')
           echo "Pull request created: $PR_RESPONSE"
