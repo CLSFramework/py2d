@@ -58,7 +58,7 @@ jobs:
         run: |
           cd cls-repo
           git add docs/6-basecode/py2d/index.md
-          git commit -m "Update sample server documentation from README"
+          git commit -m "Update py2d documentation from README"
           git push origin update-readme-py2d-${{ steps.random.outputs.random_number }}
 
       - name: Create Pull Request in CLSFramework.github.io using GitHub API
@@ -66,5 +66,5 @@ jobs:
           PR_RESPONSE=$(curl -X POST -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/CLSFramework/CLSFramework.github.io/pulls \
-            -d '{"title":"Update sample server documentation","head":"update-readme-py2d-${{ steps.random.outputs.random_number }}","base":"main","body":"This PR updates the sample server documentation based on changes made in README.md."}')
+            -d '{"title":"Update py2d documentation","head":"update-readme-py2d-${{ steps.random.outputs.random_number }}","base":"main","body":"This PR updates the py2d documentation based on changes made in README.md."}')
           echo "Pull request created: $PR_RESPONSE"
