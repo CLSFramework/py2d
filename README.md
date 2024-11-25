@@ -1,4 +1,4 @@
-# PY2D Soccer Simulation Base Code
+# PY2D Base Code
 
 [![Documentation Status](https://readthedocs.org/projects/clsframework/badge/?version=latest)](https://clsframework.github.io/docs/introduction/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
