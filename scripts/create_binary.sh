@@ -32,15 +32,6 @@ rm -rf binary/start.build
 rm -rf binary/start.dist
 rm -rf binary/start.onefile-build
 
-# copy start.sh to binary directory
-
-cp ../start.sh binary/start.sh
-
-# change start.sh to run binary instead of python and to use separate rpc server
-
-sed -i 's/run_bin=false/run_bin=true/g' binary/start.sh
-sed -i 's/separate_rpc_server=false/separate_rpc_server=true/g' binary/start.sh
-
 # copy start to binary directory
 
 cp start binary/start
