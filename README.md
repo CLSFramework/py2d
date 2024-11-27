@@ -1,10 +1,10 @@
 # PY2D Base Code
 
-
 [![Documentation Status](https://readthedocs.org/projects/clsframework/badge/?version=latest)](https://clsframework.github.io/docs/introduction/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ![alt text](image.png)
+
 PY2D Soccer Simulation Base Code is a base code for RoboCup 2D Soccer Simulation teams, which is written in Python.
 This base code is powered by the [Cross Language Soccer Framework](https://arxiv.org/pdf/2406.05621), which allows you to create a team by using any programming language that supports gRPC or Thrift.
 This base code uses `Helios Base` as a proxy to communicate with the RoboCup 2D Soccer Simulation server.
@@ -14,6 +14,8 @@ For more information, please refer to the [documentation](https://clsframework.g
 
 You can find more information about the services and messages in the [IDL section](../../3-idl/protobuf.md).
 
+there are many different ways to run the base code, in the next section, we will explain the easiest way to run the base code.
+
 ## Quick start
 
 ### Preparation
@@ -21,7 +23,7 @@ You can find more information about the services and messages in the [IDL sectio
 Install the pre-requisites using the command below:
 
 ``` Bash
-sudo apt-get install fuse #Used to run AppImages
+sudo apt-get install fuse #Used to run AppImages (Proxy, Monitor and RoboCup Server)
 ```
 
 Clone this repository & install the required python libraries (such as gRPC). Don't forget to activate your virtual environment!
@@ -55,49 +57,102 @@ Finally, to watch the game, download the monitor from [the original repository](
 
 ### Running a game
 
-This section assumes you have installed the server & proxy using the scripts (as mentioned above)
+This section assumes you have installed the server & proxy using the scripts (as mentioned above).
+
+To run a game, you must first run the RoboCup Soccer Server, then your team and opponent team, and finally the monitor.
+
 We must first run a RoboCup Server, in order to host the game:
+
+| Running the RoboCup Soccer Server
 
 ``` Bash
 cd scripts/rcssserver
 ./rcssserver
 ```
 
-Then we must run the proxy & the decisionmaking server:
+| Running your team
+
+We must run the proxy, and rpc server, you can run `start.py` or `start.sh` to run both the proxy and the server.
 
 ``` Bash
-./start.sh
-// or
 python3 start.py
+// or
+./start.sh
 ```
 
-### Options
+This script, by default, will run a gRPC server on port 50051, and 12 proxy agents (11 players and 1 coach). In each cycle of the game, the soccer server sends the state of the game to the proxy, which processes the state, creates state message and sends it to the rpc server. The rpc server receives the state message, processes it, and sends the actions to the proxy. The proxy receives the actions, processes them, and sends the commands to the soccer server.
 
-- `-t team_name`: Specify the team name.
-- `--rpc-port PORT`: Specify the RPC port (default: 50051).
-- `-d`: Enable debug mode.
+| Running the opponent team
 
+You can download an opponent team binary from the [RoboCup Soccer Simulation Repository](https://archive.robocup.info/Soccer/Simulation/2D/binaries/RoboCup/) for example `CYRUS` team from [here](https://archive.robocup.info/Soccer/Simulation/2D/binaries/RoboCup/2023/Day4/CYRUS_SS2D_RC2023_D4_BIN.tar.gz). After extracting the binary, you can run the team using the command below:
 
-Launch the opponent team, start the monitor app image. press <kbd>Ctrl</kbd> + <kbd>C</kbd> to connect to the server, and <kbd>Ctrl</kbd> + <kbd>K</kbd> for kick-off!
+``` Bash
+cd CYRUS_SS2D_RC2023_D4_BIN/bin
+./start.sh
+```
 
-### Tutorial Video (English)
+| Running the monitor
+
+To watch the game, you must run the rcssmonitor or soccerwindow2. press <kbd>Ctrl</kbd> + <kbd>C</kbd> to connect to the server, and <kbd>Ctrl</kbd> + <kbd>K</kbd> for kick-off!
+
+### start.py Arguments
+
+##### Team and Name Customization
+
+| Argument                  | Short | Description                                                      | Default Value   |
+|---------------------------|-------|------------------------------------------------------------------|-----------------|
+| `--team_name`             | `-t`  | The name of the team.                                            | `CLS`           |
+| `--use-random-name`       |       | Use a randomly generated team name.                              | `False`         |
+
+---
+
+##### RPC Server Configuration
+
+| Argument                  | Short | Description                                                      | Default Value   |
+|---------------------------|-------|------------------------------------------------------------------|-----------------|
+| `--rpc-port`              |       | The port used by the RPC server.                                | `50051`         |
+| `--use-random-rpc-port`   |       | Use a randomly assigned port for the RPC server.                | `False`         |
+| `--use-different-rpc-port`|       | Use a different port for the RPC server (useful for multi-server setups). By using this option, the script will run a rpc server for each agents| `False`         |
+| `--auto-close-rpc-server` |       | Automatically close the RPC server after finishing agent processing. | `False`         |
+
+---
+
+##### RoboCup Soccer Server Configuration
+
+| Argument                  | Short | Description                                                      | Default Value   |
+|---------------------------|-------|------------------------------------------------------------------|-----------------|
+| `--server-host`           |       | The host of the RoboCup Soccer server.                          | `localhost`     |
+| `--server-port`           |       | The port of the RoboCup Soccer server.                          | `6000`          |
+
+---
+
+##### Agent Proxies
+
+| Argument                  | Short | Description                                                      | Default Value   |
+|---------------------------|-------|------------------------------------------------------------------|-----------------|
+| `--player`                |       | Run a proxy for a single player agent.                          | `False`         |
+| `--coach`                 |       | Run a proxy for a single coach agent.                           | `False`         |
+| `--goalie`                |       | Run a proxy for a single goalie agent.                          | `False`         |
+| `--debug`                 | `-d`  | Enable debug mode for the agents.                               | `False`         |
+
+---
+
+##### Debug and Logging Options
+
+| Argument                  | Short | Description                                                      | Default Value   |
+|---------------------------|-------|------------------------------------------------------------------|-----------------|
+| `--disable-log-file`      |       | Disable logging to a file.                                      | `False`         |
+| `--log-dir`               |       | The directory where logs are stored. If not provided, logs are stored in the default directory with a timestamp. | `None`          |
+
+---
+
+### CLSF Tutorial Video (English)
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/hH-5rkhiQHg/0.jpg)](https://www.youtube.com/watch?v=hH-5rkhiQHg)
 
-### Tutorial Video (Persian)
+### CLSF Tutorial Video (Persian)
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/97YDEumcVWU/0.jpg)](https://www.youtube.com/watch?v=97YDEumcVWU&t=0s)
-
-## How to change the code
-
-The `server.py` file contains the logic in 3 main functions:
-`GetPlayerActions` receives a game state, and returns a list of actions for a player for for that cycle.
-The actions we can output are equivalent to the Helios Base (Proxy), which are abstracted into multiple levels.
-You can use actions such as `DoDash`, `DoTurn`, `DoKick` which directly apply force, or use actions such as `GoToPoint`, `SmartKick`, `Shoot` or [more](https://clsframework.github.io/docs/idl/).
-
-Similarly, you can change `GetCoachActions` which is responsible for coach communication & substitutions.
-
-You can also use `GetTrainerActions` to move the players & the ball to make repeatable scenarios (when the server is in trainer mode).
 
 ## Why & How it works
 
@@ -126,20 +181,27 @@ sequenceDiagram
     SP->>SS: Commands
 ```
 
-![cls](https://github.com/user-attachments/assets/4daee216-1479-4acd-88f2-9e772b8c7837)
 As seen in the figure, the proxy handles connecting to the server, receiving sensor information and creating a world-model, and finds the action to take via a remote procedure call to a decision-making server, which is this repository.
 
-## Configuration
+## Other Solutions To Run The Base Code
 
-### RoboCup Server configuration
+TODO
 
-You can change the configuration of the RoboCup server and change parameters such as players' stamina, game length, field length, etc. by modifying `~/.rcssserver/server.conf`. Refer to the server's documents and repo for a more detailed guide.
+## Create Binary
 
-### Modifying Proxy & Running proxy and server seperately
+TODO
 
-If you want to modify the algorithms of the base (such as ball interception, shooting, localization, etc.) you must modify the code of the [proxy repo](https://github.com/CLSFramework/soccer-simulation-proxy). After re-building from source, you can run the proxy by using `./start.sh --rpc-type grpc` in the bin folder of the proxy, and run the gRPC server with `python3 server.py` in this repo's directory. It is highly recommended to launch the python server before the proxy.
+## Test Performance by using AutoTest
 
-You can modify the rpc port by adding the argument `--rpc-port [VALUE]`, where the default is 50051.
+TODO
+
+## How to improve the performance of the team
+
+TODO
+
+## Documentation
+
+TODO
 
 ## Citation
 
