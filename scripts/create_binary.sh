@@ -35,3 +35,4 @@ rm -rf binary/start.onefile-build
 # copy start to binary directory
 
 cp start binary/start
+cp startAll binary/startAll
