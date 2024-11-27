@@ -18,7 +18,7 @@ start_team_logger = None
 
 def run_server_script(args):
     rpc_port = args.rpc_port
-    if args.use_random_port or args.use_different_port:
+    if args.use_random_rpc_port or args.use_different_rpc_port:
         import socket
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind(('localhost', 0))
@@ -27,6 +27,9 @@ def run_server_script(args):
     # Define a wrapper function to pass the arguments to the main function
     def server_main():
         import sys
+        # Reset signal handlers to default in the child process
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
         sys.argv = ['server.py', '--rpc-port', str(rpc_port), '--log-dir', log_dir]
         if args.disable_log_file:
             sys.argv += ['--disable-log-file']
@@ -41,7 +44,10 @@ def run_start_script(args, rpc_port):
     # Start the start.sh script in its own directory as a new process group
     arguments = ['bash']
     if args.player or args.coach or args.goalie:
-        arguments += ['start-agent.sh', '--coach' if args.coach else '--goalie' if args.goalie else '--player']
+        if args.debug:
+            arguments += ['start-agent-debug.sh', '--coach' if args.coach else '--goalie' if args.goalie else '--player']
+        else:
+            arguments += ['start-agent.sh', '--coach' if args.coach else '--goalie' if args.goalie else '--player']
     else:
         arguments += ['start.sh' if not args.debug else 'start-debug.sh']
         
@@ -95,26 +101,46 @@ def kill_rpc_server_process(processes):
             pass  # The process might have already exited
 
 def check_args(args):
-    pass
+    if args.team_name != 'CLS' and args.use_random_name:
+        raise ValueError("Cannot use both --team_name and --use-random-name")
+    if args.rpc_port != '50051' and args.use_random_rpc_port:
+        raise ValueError("Cannot use both --rpc-port and --use-random-rpc-port")
+    if args.rpc_port != '50051' and args.use_different_rpc_port:
+        raise ValueError("Cannot use both --rpc-port and --use-different-rpc-port")
+    if args.use_random_rpc_port and args.use_different_rpc_port:
+        raise ValueError("Cannot use both --use-random-port and --use-different-rpc-port")
+    if args.player and args.coach:
+        raise ValueError("Cannot use both --player and --coach")
+    if args.player and args.goalie:
+        raise ValueError("Cannot use both --player and --goalie")
+    if args.coach and args.goalie:
+        raise ValueError("Cannot use both --coach and --goalie")
+    if (args.player or args.coach or args.goalie) and args.use_different_rpc_port:
+        raise ValueError("Cannot use --player, --coach, or --goalie with --use-different-rpc-port")
+    if args.disable_log_file and args.log_dir:
+        raise ValueError("Cannot use both --disable-log-file and --log-dir")
+        
 
 if __name__ == "__main__":
     # Set up argument parsing
     parser = argparse.ArgumentParser(description='Run server and team scripts.')
     parser.add_argument('-t', '--team_name', required=False, help='The name of the team', default='CLS')
-    parser.add_argument('--rpc-port', required=False, help='The port of the server', default='50051')
-    parser.add_argument('-d', '--debug', required=False, help='Enable debug mode', default=False, action='store_true')
-    parser.add_argument('--use-random-port', required=False, help='Use a random port for the server', default=False, action='store_true')
+    parser.add_argument('--rpc-port', required=False, help='The port of the rpc server', default='50051')
+    parser.add_argument('-d', '--debug', required=False, help='Enable debug mode for agents', default=False, action='store_true')
+    parser.add_argument('--use-random-rpc-port', required=False, help='Use a random port for the rpc server', default=False, action='store_true')
     parser.add_argument('--use-random-name', required=False, help='Use a random team name', default=False, action='store_true')
-    parser.add_argument('--use-different-port', required=False, help='Use a different port for the rpc server', default=False, action='store_true')
-    parser.add_argument('--server-host', required=False, help='The host of the server', default='localhost')
-    parser.add_argument('--server-port', required=False, help='The port of the server', default='6000')
-    parser.add_argument('--close-server', required=False, help='Close the server', default=False, action='store_true')
-    parser.add_argument('--player', required=False, help='Use coach instead of proxy', default=False, action='store_true')
-    parser.add_argument('--coach', required=False, help='Use coach instead of proxy', default=False, action='store_true')
-    parser.add_argument('--goalie', required=False, help='Use goalie instead of proxy', default=False, action='store_true')
+    parser.add_argument('--use-different-rpc-port', required=False, help='Use a different port for the rpc server', default=False, action='store_true')
+    parser.add_argument('--server-host', required=False, help='The host of the robocup soccer server', default='localhost')
+    parser.add_argument('--server-port', required=False, help='The port of the robocup soccer server', default='6000')
+    parser.add_argument('--auto-close-rpc-server', required=False, help='Close the server after finished agent processing', default=False, action='store_true')
+    parser.add_argument('--player', required=False, help='Run one agent proxy as player', default=False, action='store_true')
+    parser.add_argument('--coach', required=False, help='Run one agent proxy as coach', default=False, action='store_true')
+    parser.add_argument('--goalie', required=False, help='Run one agent proxy as goalie', default=False, action='store_true')
     parser.add_argument('--disable-log-file', required=False, help='Disable logging to a file', default=False, action='store_true')
     parser.add_argument('--log-dir', required=False, help='The directory to store logs', default=None)
     args = parser.parse_args()
+    
+    check_args(args)
     
     # Set up logging
     if not args.log_dir:
@@ -125,6 +151,12 @@ if __name__ == "__main__":
 
     start_team_logger.debug(f"Arguments: {args=}")
     
+    def signal_handler(sig, frame):
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    
     try:
         if args.use_random_name:
             import random
@@ -134,7 +166,7 @@ if __name__ == "__main__":
         # Run the server.py script first
         all_server_processes = []
         all_start_processes = []
-        if args.use_different_port:
+        if args.use_different_rpc_port:
             for i in range(13):
                 server_process, rpc_port = run_server_script(args)
                 all_server_processes.append(server_process)
@@ -168,42 +200,12 @@ if __name__ == "__main__":
             start_threads.append(threading.Thread(target=stream_output_to_file, args=(start_process, 'proxy' if len(all_start_processes) == 1 else f'porxy_{i}', args)))
             start_threads[-1].start()
         
-        def signal_handler(sig, frame):
-            start_team_logger.info('Received signal to terminate. Cleaning up...')
-            kill_rpc_server_process(all_server_processes)
-            for server_process in all_server_processes:
-                server_process.join()
-                start_team_logger.debug(f"server.py ended with PID: {server_process.pid}")
-                
-            start_team_logger.debug("all_server_processes has finished.")
-            
-            kill_process_group(all_start_processes)
-            for start_process in all_start_processes:
-                start_process.wait()
-                start_team_logger.debug(f"start.sh ended with PID: {start_process.pid}")
-            
-            start_team_logger.debug("all_start_processes has finished.")
-            
-            stop_thread.set()
-        
-            start_team_logger.debug("Waiting for start_thread to finish...")
-            for start_thread in start_threads:
-                start_thread.join()
-            
-            start_team_logger.debug("start_thread has finished.")
-            
-            start_team_logger.info('All processes have been killed.')
-            raise KeyboardInterrupt
-            # os._exit(0)
-        signal.signal(signal.SIGTERM, signal_handler)
-        signal.signal(signal.SIGINT, signal_handler)
-
         # Wait for both threads to finish
         for start_thread in start_threads:
             start_thread.join()
         start_team_logger.debug("agents has been exited.")
         
-        if args.close_server:
+        if args.auto_close_rpc_server:
             start_team_logger.debug("Closing rpc server ...")
             kill_rpc_server_process(all_server_processes)
             start_team_logger.debug("rpc Server has been closed.")
@@ -215,12 +217,33 @@ if __name__ == "__main__":
         
         start_team_logger.info("Both processes have exited.")
     except KeyboardInterrupt:
-        start_team_logger.debug("Interrupted! Killing all processes.")
+        start_team_logger.info('Received signal to terminate. Cleaning up...')
+        # Perform cleanup operations here
         kill_rpc_server_process(all_server_processes)
+        for server_process in all_server_processes:
+            server_process.join()
+            start_team_logger.debug(f"server.py ended with PID: {server_process.pid}")
+            
+        start_team_logger.debug("All server processes have finished.")
+        
         kill_process_group(all_start_processes)
-
+        for start_process in all_start_processes:
+            start_process.wait()
+            start_team_logger.debug(f"start.sh ended with PID: {start_process.pid}")
+        
+        start_team_logger.debug("All start processes have finished.")
+        
+        stop_thread.set()
+    
+        start_team_logger.debug("Waiting for start threads to finish...")
+        for start_thread in start_threads:
+            start_thread.join()
+        
+        start_team_logger.debug("Start threads have finished.")
+        
+        start_team_logger.info('All processes have been killed.')
     finally:
         # Ensure all processes are killed on exit
-        start_team_logger.debug("Final Cleaning up...")
+        start_team_logger.debug("Final cleanup...")
         kill_rpc_server_process(all_server_processes)
         kill_process_group(all_start_processes)

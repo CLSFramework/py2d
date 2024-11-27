@@ -11,7 +11,8 @@ echo "Options: $options"
 # Function to handle termination
 cleanup() {
   echo "Terminating all start_agent.py processes..."
-  kill $pid
+  sleep 2
+  # kill $pid
   exit 0
 }
 
