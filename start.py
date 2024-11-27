@@ -104,7 +104,7 @@ if __name__ == "__main__":
     if not args.log_dir:
         log_dir = os.path.join(os.getcwd(), 'logs', f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_{random.randint(100000, 999999)}")
     else:
-        log_dir = args.log_dir
+        log_dir = os.path.join(args.log_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_{random.randint(100000, 999999)}")
     start_team_logger = setup_logger('start-team', log_dir, console_level=logging.DEBUG, file_level=logging.DEBUG if not args.disable_log_file else None, console_format_str='%(message)s')
 
     start_team_logger.debug(f"Arguments: {args=}")
@@ -161,11 +161,12 @@ if __name__ == "__main__":
 
         # Wait for both threads to finish
         start_thread.join()
-        start_team_logger.debug("server_thread has finished.")
+        start_team_logger.debug("agents has been exited.")
         
         if args.close_server:
+            start_team_logger.debug("Closing rpc server ...")
             kill_rpc_server_process(server_process)
-            start_team_logger.debug("Server has been closed.")
+            start_team_logger.debug("rpc Server has been closed.")
             
         # wait for server process to finish
         server_process.join()
