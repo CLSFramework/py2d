@@ -12,7 +12,7 @@ PY2D base is the most power full base code for RoboCup 2D Soccer Simulation whic
 
 For more information, please refer to the [documentation](https://clsframework.github.io/).
 
-You can find more information about the services and messages in the [IDL section](../../3-idl/protobuf.md).
+You can find more information about the services and messages in the [IDL section](https://clsframework.github.io/docs/idl/protobuf).
 
 there are many different ways to run the base code, in the next section, we will explain the easiest way to run the base code.
 
@@ -30,7 +30,6 @@ there are many different ways to run the base code, in the next section, we will
 - **Win**: 65, **Draw**: 17, **Lost**: 18  
 - **Win Rate**: 65.00%  
 - **Expected Win Rate**: 78.31%  
-- **95% Confidence Interval**: [55.65%, 74.35%]
 
 | Goals Distribution
 
@@ -39,7 +38,10 @@ xychart-beta
     title "Diff Goals Distribution"
     x-axis [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
     y-axis "Percentage"
-    bar [4,2,5,7,17,27,19,13,4,2]
+    bar [0,4,2,5,7,17,27,19,13,4,2]
+    line [0,4,2,5,7,17,27,19,13,4,2]
+```
+
 ## Quick start
 
 ### Preparation
