@@ -10,6 +10,7 @@ import multiprocessing
 from server import main
 import random
 import select
+import time
 
 
 # Set up logging
@@ -175,6 +176,7 @@ if __name__ == "__main__":
                 args.player = False
                 if i == 0:
                     args.goalie = True
+                    time.sleep(1)
                 elif i == 12:
                     args.coach = True
                 else:
