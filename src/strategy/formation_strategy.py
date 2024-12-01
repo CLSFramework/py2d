@@ -34,7 +34,7 @@ class FormationStrategy(IPositionStrategy):
         self.formations['4-3-3'] = Formation('src/formations/4-3-3', logger)
         self.formations['4-3-3-cyrus-base'] = Formation('src/formations/4-3-3-cyrus-base', logger)
         self.formations['4-3-3-helios-base'] = Formation('src/formations/4-3-3-helios-base', logger)
-        self.selected_formation_name = '4-3-3-cyrus-base' # '4-3-3' '4-3-3-cyrus-base' '4-3-3-helios-base'
+        self.selected_formation_name = '4-3-3' # '4-3-3' '4-3-3-cyrus-base' '4-3-3-helios-base'
         
         self._poses: dict[int, Vector2D] = {(i, Vector2D(0, 0)) for i in range(11)}
         self.current_situation = Situation.Offense_Situation
