@@ -20,6 +20,13 @@ class FormationIndexData:
     def players(self) -> list[list[float]]:
         return self._players
 
+class PlayerRole:
+    def __init__(self, name, type, side, pair):
+        self._name = name
+        self._type = type
+        self._side = side
+        self._pair = pair
+        
 class IFormationFileReader(ABC):
     @abstractmethod
     def read_file(self, path) -> list[FormationIndexData]:
@@ -27,35 +34,48 @@ class IFormationFileReader(ABC):
     
 class OldStaticFormationFileReader(IFormationFileReader):
     def read_file(self, lines):
-        players = []
+        players = {}
+        roles = {}
         for i in range(len(lines)):
             if i == 0 or lines[i].startswith('#'):
                 continue
             player = lines[i].split()
-            players.append([float(player[2]), float(player[3])])
+            players[int(player[0])] = ([float(player[2]), float(player[3])])
+            roles[int(player[0])] = PlayerRole(player[1], None, None, None)
         
-        return [FormationIndexData(None, players)]
+        return [FormationIndexData(None, players)], roles
 
 class OldDelaunayFormationFileReader(IFormationFileReader):
     def read_file(self, lines):
+        roles = {}
+        begin_roles = False
+        for i in range(len(lines)):
+            if lines[i].startswith('Begin Roles'):
+                begin_roles = True
+                continue
+            if lines[i].startswith('End Roles'):
+                break
+            if begin_roles:
+                player = lines[i].split()
+                roles[int(player[0])] = PlayerRole(player[1], None, None, int(player[2]))
         indexes = []
         for i in range(len(lines)):
             if lines[i].find('Ball') >= 0:
-                indexes.append(self.read_sample(i, lines))
+                indexes.append(self.read_index(i, lines))
             i += 11
-        return indexes
+        return indexes, roles
 
-    def read_sample(self, i, lines):
+    def read_index(self, i, lines):
         ball = lines[i].split(' ')
         ball_x = float(ball[1])
         ball_y = float(ball[2])
         ball = [ball_x, ball_y]
-        players = []
+        players = {}
         for j in range(1, 12):
             player = lines[i + j].split(' ')
             player_x = float(player[1])
             player_y = float(player[2])
-            players.append([player_x, player_y])
+            players[j] = ([player_x, player_y])
         return FormationIndexData(ball, players)
     
 class FormationFileReaderFactory:
@@ -68,7 +88,8 @@ class FormationFileReaderFactory:
         file = open(path, 'r')
         lines = file.readlines()
         reader, formation_type = self.get_reader(lines)
-        return reader.read_file(lines), formation_type
+        indexes, roles = reader.read_file(lines)
+        return indexes, roles, formation_type
 
 class FormationFile:
     def __init__(self, path, logger: logging.Logger):
@@ -83,13 +104,13 @@ class FormationFile:
         self.calculate()
 
     def read_file(self, path):
-        indexes, self._formation_type = FormationFileReaderFactory().read_file(path)
+        indexes, roles, self._formation_type = FormationFileReaderFactory().read_file(path)
         
         if self._formation_type == FormationType.Static:
             data = indexes[0]
             players = data.players()
-            for i in range(11):
-                self._target_players[i + 1] = Vector2D(float(players[i][0]), float(players[i][1]))
+            for i in range(1, 12):
+                self._target_players[i] = Vector2D(float(players[i][0]), float(players[i][1]))
         else:
             for index in indexes:
                 self._balls.append(index.ball())
@@ -131,7 +152,7 @@ class FormationFile:
         n2 = lineProj.dist(B)
 
         self._target_players.clear()
-        for p in range(11):
+        for p in range(1, 12):
             OPa = Vector2D(self._players[ids[0]][p][0], self._players[ids[0]][p][1])
             OPb = Vector2D(self._players[ids[1]][p][0], self._players[ids[1]][p][1])
             OPc = Vector2D(self._players[ids[2]][p][0], self._players[ids[2]][p][1])
@@ -141,7 +162,7 @@ class FormationFile:
             OB = (OI - OPa)
             OB *= (m2 / (m2 + n2))
             OB += OPa
-            self._target_players[p + 1] = OB
+            self._target_players[p] = OB
 
     def get_pos(self, unum):
         return self._target_players[unum]
