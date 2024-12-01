@@ -23,23 +23,23 @@ there are many different ways to run the base code, in the next section, we will
 | Summary Statistics
 
 - **Game Count**: 100  
-- **Goals**: 234 : 143 (diff: 91)  
-- **Points**: 212 : 71 (diff: 141)  
-- **Average Goals**: 2.34 : 1.43 (diff: 0.91)  
-- **Average Points**: 2.12 : 0.71 (diff: 1.41)  
-- **Win**: 65, **Draw**: 17, **Lost**: 18  
-- **Win Rate**: 65.00%  
-- **Expected Win Rate**: 78.31%  
+- **Goals**: 223 : 78 (diff: 145)  
+- **Points**: 229 : 52 (diff: 177)  
+- **Average Goals**: 2.23 : 0.78 (diff: 1.45)  
+- **Average Points**: 2.29 : 0.52 (diff: 1.77)  
+- **Win**: 70, **Draw**: 19, **Lost**: 11
+- **Win Rate**: 70.00%  
+- **Expected Win Rate**: 86.42%  
 
 | Goals Distribution
 
 ```mermaid
 xychart-beta
     title "Diff Goals Distribution"
-    x-axis [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
+    x-axis [-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8]
     y-axis "Percentage"
-    bar [0,4,2,5,7,17,27,19,13,4,2]
-    line [0,4,2,5,7,17,27,19,13,4,2]
+    bar [0,0,0,0,1.00, 0.00, 2.00, 8.00, 19.00, 22.00, 25.00, 13.00, 5.00, 2.00, 2.00, 0.00, 1.00]
+    line [0,0,0,0,1.00, 0.00, 2.00, 8.00, 19.00, 22.00, 25.00, 13.00, 5.00, 2.00, 2.00, 0.00, 1.00]
 ```
 
 ## Quick start

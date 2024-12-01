@@ -1,6 +1,7 @@
 from src.interfaces.IDecisionMaker import IDecisionMaker
 from .play_on_decision_maker import PlayOnDecisionMaker
 from .set_play_decision_maker import SetPlayDecisionMaker
+from .penalty_decision_maker import PenaltyDecisionMaker
 from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 
@@ -18,12 +19,13 @@ class DecisionMaker(IDecisionMaker):
             Makes a decision for the given agent based on its role and the current game mode.
             If the agent is a goalie, it adds a goalie action.
             If the game mode is 'PlayOn', it delegates the decision to play_on_decision_maker.
-            If the game mode is a penalty kick, it adds a penalty action.
-            Otherwise, it adds a set play action.
+            If the game mode is a penalty kick, it adds a penalty action using penalty_decision_maker.
+            Otherwise, it adds a set play action using set_play_decision_maker.
     """
     def __init__(self):
         self.play_on_decision_maker = PlayOnDecisionMaker()
         self.set_play_decision_maker = SetPlayDecisionMaker()
+        self.penalty_decision_maker = PenaltyDecisionMaker()
     
     def make_decision(self, agent: IAgent):
         if agent.wm.self.is_goalie:
@@ -31,6 +33,6 @@ class DecisionMaker(IDecisionMaker):
         elif agent.wm.game_mode_type == GameModeType.PlayOn:
             self.play_on_decision_maker.make_decision(agent)
         elif agent.wm.is_penalty_kick_mode:
-            agent.add_action(PlayerAction(helios_penalty=HeliosPenalty()))
+            self.penalty_decision_maker.make_decision(agent)
         else:
-            agent.add_action(PlayerAction(helios_set_play=HeliosSetPlay()))
+            self.set_play_decision_maker.make_decision(agent)

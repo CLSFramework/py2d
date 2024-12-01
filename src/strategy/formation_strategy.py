@@ -10,6 +10,16 @@ import logging
 
 
 class Situation(Enum):
+    """
+    Enum class representing different game situations in a 2D soccer simulation.
+
+    Attributes:
+        OurSetPlay_Situation (int): Represents a situation where our team is executing a set play.
+        OppSetPlay_Situation (int): Represents a situation where the opposing team is executing a set play.
+        Defense_Situation (int): Represents a defensive situation for our team.
+        Offense_Situation (int): Represents an offensive situation for our team.
+        PenaltyKick_Situation (int): Represents a penalty kick situation.
+    """
     OurSetPlay_Situation = 0,
     OppSetPlay_Situation = 1,
     Defense_Situation = 2,
@@ -17,34 +27,64 @@ class Situation(Enum):
     PenaltyKick_Situation = 4
 
 class Formation:
+    """
+    A class to manage different soccer formations for various game situations.
+
+    Attributes:
+        before_kick_off_formation (FormationFile): Formation used before the kick-off.
+        defense_formation (FormationFile): Formation used during defense.
+        offense_formation (FormationFile): Formation used during offense.
+        goalie_kick_opp_formation (FormationFile): Formation used when the opponent's goalie kicks.
+        goalie_kick_our_formation (FormationFile): Formation used when our goalie kicks.
+        kickin_our_formation (FormationFile): Formation used during our team's kick-in.
+        setplay_opp_formation (FormationFile): Formation used during the opponent's set play.
+        setplay_our_formation (FormationFile): Formation used during our team's set play.
+
+    Args:
+        path (str): The path to the directory containing the formation configuration files.
+        logger (logging.Logger): Logger instance for logging formation-related information.
+    """
     def __init__(self, path, logger: logging.Logger):
+        # Initialize formation files for different game situations
+        # before_kick_off_formation: Formation used before the kick-off
         self.before_kick_off_formation: FormationFile = FormationFile(f'{path}/before-kick-off.conf', logger)
+        # defense_formation: Formation used during defense
         self.defense_formation: FormationFile = FormationFile(f'{path}/defense-formation.conf', logger)
+        # offense_formation: Formation used during offense
         self.offense_formation: FormationFile = FormationFile(f'{path}/offense-formation.conf', logger)
+        # goalie_kick_opp_formation: Formation used when the opponent's goalie kicks
         self.goalie_kick_opp_formation: FormationFile = FormationFile(f'{path}/goalie-kick-opp-formation.conf', logger)
+        # goalie_kick_our_formation: Formation used when our goalie kicks
         self.goalie_kick_our_formation: FormationFile = FormationFile(f'{path}/goalie-kick-our-formation.conf', logger)
+        # kickin_our_formation: Formation used during our team's kick-in
         self.kickin_our_formation: FormationFile = FormationFile(f'{path}/kickin-our-formation.conf', logger)
+        # setplay_opp_formation: Formation used during the opponent's set play
         self.setplay_opp_formation: FormationFile = FormationFile(f'{path}/setplay-opp-formation.conf', logger)
+        # setplay_our_formation: Formation used during our team's set play
         self.setplay_our_formation: FormationFile = FormationFile(f'{path}/setplay-our-formation.conf', logger)
         
 class FormationStrategy(IPositionStrategy):
     def __init__(self, logger: logging.Logger):
         self.logger = logger
         self.formations: dict[str, Formation] = {}
-        self.formations['4-3-3'] = Formation('src/formations/4-3-3', logger)
-        self.formations['4-3-3-cyrus-base'] = Formation('src/formations/4-3-3-cyrus-base', logger)
-        self.formations['4-3-3-helios-base'] = Formation('src/formations/4-3-3-helios-base', logger)
-        self.selected_formation_name = '4-3-3' # '4-3-3' '4-3-3-cyrus-base' '4-3-3-helios-base'
+        
+        self._read_formations()
+        self._set_formation(None)
         
         self._poses: dict[int, Vector2D] = {(i, Vector2D(0, 0)) for i in range(11)}
         self.current_situation = Situation.Offense_Situation
         self.current_formation_file: FormationFile = self._get_current_formation().offense_formation
 
+    def _read_formations(self):
+        self.formations['4-3-3'] = Formation('src/formations/4-3-3', self.logger)
+        self.formations['4-3-3-cyrus-base'] = Formation('src/formations/4-3-3-cyrus-base', self.logger)
+        self.formations['4-3-3-helios-base'] = Formation('src/formations/4-3-3-helios-base', self.logger)
+        
     def _get_current_formation(self) -> Formation:
         return self.formations[self.selected_formation_name]
     
     def _set_formation(self, wm: WorldModel):
-        self.selected_formation_name = '4-3-3'
+        self.selected_formation_name = '4-3-3-cyrus-base' # '4-3-3' '4-3-3-cyrus-base' '4-3-3-helios-base'
         
     def update(self, agent: IAgent):
         logger = agent.logger
@@ -117,13 +157,13 @@ class FormationStrategy(IPositionStrategy):
     def get_position(self, uniform_number) -> Vector2D:
         return self._poses[uniform_number]
     
-    def get_role_name(self, uniform_number) -> int:
+    def get_role_name(self, uniform_number) -> RoleName:
         return self.current_formation_file.get_role(uniform_number).name
     
-    def get_role_type(self, uniform_number) -> int:
+    def get_role_type(self, uniform_number) -> RoleType:
         return self.current_formation_file.get_role(uniform_number).type
     
-    def get_role_side(self, uniform_number) -> int:
+    def get_role_side(self, uniform_number) -> RoleSide:
         return self.current_formation_file.get_role(uniform_number).side
     
     def get_role_pair(self, uniform_number) -> int:
