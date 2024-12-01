@@ -2,14 +2,45 @@ from scipy.spatial import Delaunay
 from pyrusgeom.geom_2d import *
 from enum import Enum
 from pyrusgeom.soccer_math import min_max
+import logging
+from abc import ABC, abstractmethod
 
 class FormationType(Enum):
     Static = 's'
     DelaunayTriangulation2 = 'D'
 
+class FormationIndexData:
+    def __init__(self, ball, players):
+        self._ball: list[float] = ball
+        self._players: list[list[float]] = players
+        
+    def ball(self) -> list[float]:
+        return self._ball
+    
+    def players(self) -> list[list[float]]:
+        return self._players
+
+class IFormationFileReader(ABC):
+    @abstractmethod
+    def read_file(self, path):
+        pass
+    
+class OldStaticFormationFileReader(IFormationFileReader):
+    def read_file(self, lines):
+        players = []
+        for i in range(len(lines)):
+            if i == 0 or lines[i].startswith('#'):
+                continue
+            player = lines[i].split()
+            players.append([float(player[2]), float(player[3])])
+        
+        return FormationIndexData(None, players)
+            
+    
 
 class FormationFile:
-    def __init__(self, path):
+    def __init__(self, path, logger: logging.Logger):
+        self._logger = logger
         self._balls = []
         self._players = []
         self._triangles = []
@@ -25,7 +56,11 @@ class FormationFile:
         if lines[0].find('Static') < 0:
             self._formation_type = FormationType.DelaunayTriangulation2
         if self._formation_type == FormationType.Static:
-            self.read_static(lines)
+            data = OldStaticFormationFileReader().read_file(lines)
+            players = data.players()
+            # self._players = data.players()
+            for i in range(11):
+                self._target_players[i + 1] = Vector2D(float(players[i][0]), float(players[i][1]))
         else:
             self.read_delaunay(lines)
 
