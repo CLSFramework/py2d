@@ -13,6 +13,7 @@ from src.interfaces.IAgent import IAgent
 from src.sample_coach_agent import SampleCoachAgent
 from src.sample_player_agent import SamplePlayerAgent
 from src.sample_trainer_agent import SampleTrainerAgent
+import traceback
 
 
 console_logging_level = logging.INFO
@@ -51,8 +52,7 @@ class GrpcAgent:
                 return self.GetTrainerActions(state)
         except Exception as e:
             self.logger.error(f"Error in GetAction: {e}")
-            import traceback
-            traceback.print_exc()
+            self.logger.error(traceback.format_exc())
             return pb2.PlayerActions()
         
     def GetPlayerActions(self, state: pb2.State):
@@ -81,16 +81,31 @@ class GrpcAgent:
         return pb2.TrainerActions(actions=self.agent.get_actions())
     
     def SetServerParams(self, server_params: pb2.ServerParam):
-        self.logger.debug(f"Server params received unum {server_params.register_response.uniform_number}")
-        self.agent.set_server_params(server_params)
+        try:
+            self.logger.debug(f"Server params received unum {server_params.register_response.uniform_number}")
+            self.agent.set_server_params(server_params)
+        except Exception as e:
+            self.logger.error(f"Error in GetAction: {e}")
+            self.logger.error(traceback.format_exc())
+            return pb2.PlayerActions()
         
     def SetPlayerParams(self, player_params: pb2.PlayerParam):
-        self.logger.debug(f"Player params received unum {player_params.register_response.uniform_number}")
-        self.agent.set_player_params(player_params)
+        try:
+            self.logger.debug(f"Player params received unum {player_params.register_response.uniform_number}")
+            self.agent.set_player_params(player_params)
+        except Exception as e:
+            self.logger.error(f"Error in GetAction: {e}")
+            self.logger.error(traceback.format_exc())
+            return pb2.PlayerActions()
         
     def SetPlayerType(self, player_type: pb2.PlayerType):
-        self.logger.debug(f"Player type received unum {player_type.register_response.uniform_number}")
-        self.agent.set_player_types(player_type)
+        try:
+            self.logger.debug(f"Player type received unum {player_type.register_response.uniform_number}")
+            self.agent.set_player_types(player_type)
+        except Exception as e:
+            self.logger.error(f"Error in GetAction: {e}")
+            self.logger.error(traceback.format_exc())
+            return pb2.PlayerActions()
         
 class GameHandler(pb2_grpc.GameServicer):
     def __init__(self, shared_lock, shared_number_of_connections) -> None:
@@ -158,8 +173,7 @@ class GameHandler(pb2_grpc.GameServicer):
             return register_response
         except Exception as e:
             main_logger.error(f"Error in Register: {e}")
-            import traceback
-            traceback.print_exc()
+            main_logger.error(traceback.format_exc())
             return pb2.RegisterResponse()
 
     def SendByeCommand(self, register_response: pb2.RegisterResponse, context):

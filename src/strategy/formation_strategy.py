@@ -1,10 +1,12 @@
 from src.interfaces.IPositionStrategy import IPositionStrategy
 from src.strategy.formation_file import *
 from src.interfaces.IAgent import IAgent
+from src.strategy.player_role import PlayerRole, RoleName, RoleType, RoleSide
 from enum import Enum
 from pyrusgeom.soccer_math import *
 from service_pb2 import *
 import logging
+
 
 
 class Situation(Enum):
@@ -15,21 +17,24 @@ class Situation(Enum):
     PenaltyKick_Situation = 4
 
 class Formation:
-    def __init__(self, path):
-        self.before_kick_off_formation: FormationFile = FormationFile(f'{path}/before_kick_off.conf')
-        self.defense_formation: FormationFile = FormationFile(f'{path}/defense_formation.conf')
-        self.offense_formation: FormationFile = FormationFile(f'{path}/offense_formation.conf')
-        self.goalie_kick_opp_formation: FormationFile = FormationFile(f'{path}/goalie_kick_opp_formation.conf')
-        self.goalie_kick_our_formation: FormationFile = FormationFile(f'{path}/goalie_kick_our_formation.conf')
-        self.kickin_our_formation: FormationFile = FormationFile(f'{path}/kickin_our_formation.conf')
-        self.setplay_opp_formation: FormationFile = FormationFile(f'{path}/setplay_opp_formation.conf')
-        self.setplay_our_formation: FormationFile = FormationFile(f'{path}/setplay_our_formation.conf')
+    def __init__(self, path, logger: logging.Logger):
+        self.before_kick_off_formation: FormationFile = FormationFile(f'{path}/before-kick-off.conf', logger)
+        self.defense_formation: FormationFile = FormationFile(f'{path}/defense-formation.conf', logger)
+        self.offense_formation: FormationFile = FormationFile(f'{path}/offense-formation.conf', logger)
+        self.goalie_kick_opp_formation: FormationFile = FormationFile(f'{path}/goalie-kick-opp-formation.conf', logger)
+        self.goalie_kick_our_formation: FormationFile = FormationFile(f'{path}/goalie-kick-our-formation.conf', logger)
+        self.kickin_our_formation: FormationFile = FormationFile(f'{path}/kickin-our-formation.conf', logger)
+        self.setplay_opp_formation: FormationFile = FormationFile(f'{path}/setplay-opp-formation.conf', logger)
+        self.setplay_our_formation: FormationFile = FormationFile(f'{path}/setplay-our-formation.conf', logger)
         
 class FormationStrategy(IPositionStrategy):
-    def __init__(self):
+    def __init__(self, logger: logging.Logger):
+        self.logger = logger
         self.formations: dict[str, Formation] = {}
-        self.formations['4-3-3'] = Formation('src/formations/4-3-3')
-        self.selected_formation_name = '4-3-3'
+        self.formations['4-3-3'] = Formation('src/formations/4-3-3', logger)
+        self.formations['4-3-3-cyrus-base'] = Formation('src/formations/4-3-3-cyrus-base', logger)
+        self.formations['4-3-3-helios-base'] = Formation('src/formations/4-3-3-helios-base', logger)
+        self.selected_formation_name = '4-3-3' # '4-3-3' '4-3-3-cyrus-base' '4-3-3-helios-base'
         
         self._poses: dict[int, Vector2D] = {(i, Vector2D(0, 0)) for i in range(11)}
         self.current_situation = Situation.Offense_Situation
@@ -109,8 +114,23 @@ class FormationStrategy(IPositionStrategy):
                 
         logger.debug(f'{self._poses=}')
         
-    def get_position(self, uniform_number):
+    def get_position(self, uniform_number) -> Vector2D:
         return self._poses[uniform_number]
+    
+    def get_role_name(self, uniform_number) -> int:
+        return self.current_formation_file.get_role(uniform_number).name
+    
+    def get_role_type(self, uniform_number) -> int:
+        return self.current_formation_file.get_role(uniform_number).type
+    
+    def get_role_side(self, uniform_number) -> int:
+        return self.current_formation_file.get_role(uniform_number).side
+    
+    def get_role_pair(self, uniform_number) -> int:
+        return self.current_formation_file.get_role(uniform_number).pair
+    
+    def get_role(self, uniform_number) -> PlayerRole:
+        return self.current_formation_file.get_role(uniform_number)
     
     def get_offside_line(self):
         home_poses_x = [pos.x() for pos in self._poses.values()]

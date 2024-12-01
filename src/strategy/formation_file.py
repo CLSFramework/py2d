@@ -1,59 +1,35 @@
 from scipy.spatial import Delaunay
 from pyrusgeom.geom_2d import *
-from enum import Enum
 from pyrusgeom.soccer_math import min_max
-
-class FormationType(Enum):
-    Static = 's'
-    DelaunayTriangulation2 = 'D'
-
+import logging
+from src.strategy.formation_file_reader import FormationFileReaderFactory, FormationType
+from src.strategy.player_role import PlayerRole
 
 class FormationFile:
-    def __init__(self, path):
+    def __init__(self, path, logger: logging.Logger):
+        self._logger = logger
         self._balls = []
         self._players = []
         self._triangles = []
         self._formation_type = FormationType.Static
         self._target_players = {}
         self._path = path
+        self._roles: dict[int, PlayerRole] = {}
         self.read_file(path)
         self.calculate()
 
     def read_file(self, path):
-        file = open(path, 'r')
-        lines = file.readlines()
-        if lines[0].find('Static') < 0:
-            self._formation_type = FormationType.DelaunayTriangulation2
+        indexes, self._roles, self._formation_type = FormationFileReaderFactory().read_file(path)
+        
         if self._formation_type == FormationType.Static:
-            self.read_static(lines)
+            data = indexes[0]
+            players = data.players()
+            for i in range(1, 12):
+                self._target_players[i] = Vector2D(float(players[i][0]), float(players[i][1]))
         else:
-            self.read_delaunay(lines)
-
-    def read_static(self, lines):
-        for i in range(len(lines)):
-            if i == 0 or lines[i].startswith('#'):
-                continue
-            player = lines[i].split()
-            self._target_players[i + 1] = Vector2D(float(player[2]), float(player[3]))
-
-    def read_delaunay(self, lines):
-        for i in range(len(lines)):
-            if lines[i].find('Ball') >= 0:
-                self.read_sample(i, lines)
-            i += 11
-
-    def read_sample(self, i, lines):
-        ball = lines[i].split(' ')
-        ball_x = float(ball[1])
-        ball_y = float(ball[2])
-        self._balls.append([ball_x, ball_y])
-        players = []
-        for j in range(1, 12):
-            player = lines[i + j].split(' ')
-            player_x = float(player[1])
-            player_y = float(player[2])
-            players.append([player_x, player_y])
-        self._players.append(players)
+            for index in indexes:
+                self._balls.append(index.ball())
+                self._players.append(index.players())
 
     def calculate(self):
         if self._formation_type == FormationType.Static:
@@ -91,7 +67,7 @@ class FormationFile:
         n2 = lineProj.dist(B)
 
         self._target_players.clear()
-        for p in range(11):
+        for p in range(1, 12):
             OPa = Vector2D(self._players[ids[0]][p][0], self._players[ids[0]][p][1])
             OPb = Vector2D(self._players[ids[1]][p][0], self._players[ids[1]][p][1])
             OPc = Vector2D(self._players[ids[2]][p][0], self._players[ids[2]][p][1])
@@ -101,13 +77,16 @@ class FormationFile:
             OB = (OI - OPa)
             OB *= (m2 / (m2 + n2))
             OB += OPa
-            self._target_players[p + 1] = OB
+            self._target_players[p] = OB
 
     def get_pos(self, unum):
         return self._target_players[unum]
 
     def get_poses(self):
         return self._target_players
+    
+    def get_role(self, unum) -> PlayerRole:
+        return self._roles[unum]
 
     def __repr__(self):
         return self._path
