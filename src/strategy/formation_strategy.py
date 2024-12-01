@@ -16,14 +16,14 @@ class Situation(Enum):
 
 class Formation:
     def __init__(self, path, logger: logging.Logger):
-        self.before_kick_off_formation: FormationFile = FormationFile(f'{path}/before_kick_off.conf', logger)
-        self.defense_formation: FormationFile = FormationFile(f'{path}/defense_formation.conf', logger)
-        self.offense_formation: FormationFile = FormationFile(f'{path}/offense_formation.conf', logger)
-        self.goalie_kick_opp_formation: FormationFile = FormationFile(f'{path}/goalie_kick_opp_formation.conf', logger)
-        self.goalie_kick_our_formation: FormationFile = FormationFile(f'{path}/goalie_kick_our_formation.conf', logger)
-        self.kickin_our_formation: FormationFile = FormationFile(f'{path}/kickin_our_formation.conf', logger)
-        self.setplay_opp_formation: FormationFile = FormationFile(f'{path}/setplay_opp_formation.conf', logger)
-        self.setplay_our_formation: FormationFile = FormationFile(f'{path}/setplay_our_formation.conf', logger)
+        self.before_kick_off_formation: FormationFile = FormationFile(f'{path}/before-kick-off.conf', logger)
+        self.defense_formation: FormationFile = FormationFile(f'{path}/defense-formation.conf', logger)
+        self.offense_formation: FormationFile = FormationFile(f'{path}/offense-formation.conf', logger)
+        self.goalie_kick_opp_formation: FormationFile = FormationFile(f'{path}/goalie-kick-opp-formation.conf', logger)
+        self.goalie_kick_our_formation: FormationFile = FormationFile(f'{path}/goalie-kick-our-formation.conf', logger)
+        self.kickin_our_formation: FormationFile = FormationFile(f'{path}/kickin-our-formation.conf', logger)
+        self.setplay_opp_formation: FormationFile = FormationFile(f'{path}/setplay-opp-formation.conf', logger)
+        self.setplay_our_formation: FormationFile = FormationFile(f'{path}/setplay-our-formation.conf', logger)
         
 class FormationStrategy(IPositionStrategy):
     def __init__(self, logger: logging.Logger):
@@ -31,7 +31,8 @@ class FormationStrategy(IPositionStrategy):
         self.formations: dict[str, Formation] = {}
         self.formations['4-3-3'] = Formation('src/formations/4-3-3', logger)
         self.formations['4-3-3-cyrus-base'] = Formation('src/formations/4-3-3-cyrus-base', logger)
-        self.selected_formation_name = '4-3-3-cyrus-base' # '4-3-3'
+        self.formations['4-3-3-helios-base'] = Formation('src/formations/4-3-3-helios-base', logger)
+        self.selected_formation_name = '4-3-3-cyrus-base' # '4-3-3' '4-3-3-cyrus-base' '4-3-3-helios-base'
         
         self._poses: dict[int, Vector2D] = {(i, Vector2D(0, 0)) for i in range(11)}
         self.current_situation = Situation.Offense_Situation
