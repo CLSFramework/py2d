@@ -4,6 +4,8 @@ from enum import Enum
 from pyrusgeom.soccer_math import min_max
 import logging
 from abc import ABC, abstractmethod
+import json
+
 
 class FormationType(Enum):
     Static = 's'
@@ -78,8 +80,39 @@ class OldDelaunayFormationFileReader(IFormationFileReader):
             players[j] = ([player_x, player_y])
         return FormationIndexData(ball, players)
     
+class JsonFormationFileReader(IFormationFileReader):
+    def read_file(self, lines) -> list[FormationIndexData]:
+        text = ''.join(lines)
+        data = json.loads(text)
+        roles = {}
+        for role in data['role']:
+            roles[role['number']] = PlayerRole(role['name'], role['type'], role['side'], role['pair'])
+        indexes = []
+        for index in data['data']:
+            ball = [index['ball']['x'], index['ball']['y']]
+            players = {}
+            for i in range(1, 12):
+                players[i] = [index[str(i)]['x'], index[str(i)]['y']]
+            indexes.append(FormationIndexData(ball, players))
+        return indexes, roles
+    
+    @staticmethod
+    def is_json(lines):
+        return lines[0].find('{') >= 0
+    
+    @staticmethod
+    def get_method(lines):
+        text = ''.join(lines)
+        data = json.loads(text)
+        if data['method'] == 'Static':
+            return FormationType.Static
+        return FormationType.DelaunayTriangulation2
+        
+        
 class FormationFileReaderFactory:
     def get_reader(self, lines) -> list[IFormationFileReader, FormationType]:
+        if JsonFormationFileReader.is_json(lines):
+            return JsonFormationFileReader(), JsonFormationFileReader.get_method(lines)
         if lines[0].find('Static') >= 0:
             return OldStaticFormationFileReader(), FormationType.Static
         return OldDelaunayFormationFileReader(), FormationType.DelaunayTriangulation2
