@@ -22,7 +22,7 @@ class FormationIndexData:
 
 class IFormationFileReader(ABC):
     @abstractmethod
-    def read_file(self, path):
+    def read_file(self, path) -> list[FormationIndexData]:
         pass
     
 class OldStaticFormationFileReader(IFormationFileReader):
@@ -34,9 +34,41 @@ class OldStaticFormationFileReader(IFormationFileReader):
             player = lines[i].split()
             players.append([float(player[2]), float(player[3])])
         
-        return FormationIndexData(None, players)
-            
+        return [FormationIndexData(None, players)]
+
+class OldDelaunayFormationFileReader(IFormationFileReader):
+    def read_file(self, lines):
+        indexes = []
+        for i in range(len(lines)):
+            if lines[i].find('Ball') >= 0:
+                indexes.append(self.read_sample(i, lines))
+            i += 11
+        return indexes
+
+    def read_sample(self, i, lines):
+        ball = lines[i].split(' ')
+        ball_x = float(ball[1])
+        ball_y = float(ball[2])
+        ball = [ball_x, ball_y]
+        players = []
+        for j in range(1, 12):
+            player = lines[i + j].split(' ')
+            player_x = float(player[1])
+            player_y = float(player[2])
+            players.append([player_x, player_y])
+        return FormationIndexData(ball, players)
     
+class FormationFileReaderFactory:
+    def get_reader(self, lines) -> list[IFormationFileReader, FormationType]:
+        if lines[0].find('Static') >= 0:
+            return OldStaticFormationFileReader(), FormationType.Static
+        return OldDelaunayFormationFileReader(), FormationType.DelaunayTriangulation2
+    
+    def read_file(self, path) -> list[FormationIndexData]:
+        file = open(path, 'r')
+        lines = file.readlines()
+        reader, formation_type = self.get_reader(lines)
+        return reader.read_file(lines), formation_type
 
 class FormationFile:
     def __init__(self, path, logger: logging.Logger):
@@ -51,44 +83,17 @@ class FormationFile:
         self.calculate()
 
     def read_file(self, path):
-        file = open(path, 'r')
-        lines = file.readlines()
-        if lines[0].find('Static') < 0:
-            self._formation_type = FormationType.DelaunayTriangulation2
+        indexes, self._formation_type = FormationFileReaderFactory().read_file(path)
+        
         if self._formation_type == FormationType.Static:
-            data = OldStaticFormationFileReader().read_file(lines)
+            data = indexes[0]
             players = data.players()
-            # self._players = data.players()
             for i in range(11):
                 self._target_players[i + 1] = Vector2D(float(players[i][0]), float(players[i][1]))
         else:
-            self.read_delaunay(lines)
-
-    def read_static(self, lines):
-        for i in range(len(lines)):
-            if i == 0 or lines[i].startswith('#'):
-                continue
-            player = lines[i].split()
-            self._target_players[i + 1] = Vector2D(float(player[2]), float(player[3]))
-
-    def read_delaunay(self, lines):
-        for i in range(len(lines)):
-            if lines[i].find('Ball') >= 0:
-                self.read_sample(i, lines)
-            i += 11
-
-    def read_sample(self, i, lines):
-        ball = lines[i].split(' ')
-        ball_x = float(ball[1])
-        ball_y = float(ball[2])
-        self._balls.append([ball_x, ball_y])
-        players = []
-        for j in range(1, 12):
-            player = lines[i + j].split(' ')
-            player_x = float(player[1])
-            player_y = float(player[2])
-            players.append([player_x, player_y])
-        self._players.append(players)
+            for index in indexes:
+                self._balls.append(index.ball())
+                self._players.append(index.players())
 
     def calculate(self):
         if self._formation_type == FormationType.Static:
