@@ -1,128 +1,9 @@
 from scipy.spatial import Delaunay
 from pyrusgeom.geom_2d import *
-from enum import Enum
 from pyrusgeom.soccer_math import min_max
 import logging
-from abc import ABC, abstractmethod
-import json
-
-
-class FormationType(Enum):
-    Static = 's'
-    DelaunayTriangulation2 = 'D'
-
-class FormationIndexData:
-    def __init__(self, ball, players):
-        self._ball: list[float] = ball
-        self._players: list[list[float]] = players
-        
-    def ball(self) -> list[float]:
-        return self._ball
-    
-    def players(self) -> list[list[float]]:
-        return self._players
-
-class PlayerRole:
-    def __init__(self, name, type, side, pair):
-        self._name = name
-        self._type = type
-        self._side = side
-        self._pair = pair
-        
-class IFormationFileReader(ABC):
-    @abstractmethod
-    def read_file(self, path) -> list[FormationIndexData]:
-        pass
-    
-class OldStaticFormationFileReader(IFormationFileReader):
-    def read_file(self, lines):
-        players = {}
-        roles = {}
-        for i in range(len(lines)):
-            if i == 0 or lines[i].startswith('#'):
-                continue
-            player = lines[i].split()
-            players[int(player[0])] = ([float(player[2]), float(player[3])])
-            roles[int(player[0])] = PlayerRole(player[1], None, None, None)
-        
-        return [FormationIndexData(None, players)], roles
-
-class OldDelaunayFormationFileReader(IFormationFileReader):
-    def read_file(self, lines):
-        roles = {}
-        begin_roles = False
-        for i in range(len(lines)):
-            if lines[i].startswith('Begin Roles'):
-                begin_roles = True
-                continue
-            if lines[i].startswith('End Roles'):
-                break
-            if begin_roles:
-                player = lines[i].split()
-                roles[int(player[0])] = PlayerRole(player[1], None, None, int(player[2]))
-        indexes = []
-        for i in range(len(lines)):
-            if lines[i].find('Ball') >= 0:
-                indexes.append(self.read_index(i, lines))
-            i += 11
-        return indexes, roles
-
-    def read_index(self, i, lines):
-        ball = lines[i].split(' ')
-        ball_x = float(ball[1])
-        ball_y = float(ball[2])
-        ball = [ball_x, ball_y]
-        players = {}
-        for j in range(1, 12):
-            player = lines[i + j].split(' ')
-            player_x = float(player[1])
-            player_y = float(player[2])
-            players[j] = ([player_x, player_y])
-        return FormationIndexData(ball, players)
-    
-class JsonFormationFileReader(IFormationFileReader):
-    def read_file(self, lines) -> list[FormationIndexData]:
-        text = ''.join(lines)
-        data = json.loads(text)
-        roles = {}
-        for role in data['role']:
-            roles[role['number']] = PlayerRole(role['name'], role['type'], role['side'], role['pair'])
-        indexes = []
-        for index in data['data']:
-            ball = [index['ball']['x'], index['ball']['y']]
-            players = {}
-            for i in range(1, 12):
-                players[i] = [index[str(i)]['x'], index[str(i)]['y']]
-            indexes.append(FormationIndexData(ball, players))
-        return indexes, roles
-    
-    @staticmethod
-    def is_json(lines):
-        return lines[0].find('{') >= 0
-    
-    @staticmethod
-    def get_method(lines):
-        text = ''.join(lines)
-        data = json.loads(text)
-        if data['method'] == 'Static':
-            return FormationType.Static
-        return FormationType.DelaunayTriangulation2
-        
-        
-class FormationFileReaderFactory:
-    def get_reader(self, lines) -> list[IFormationFileReader, FormationType]:
-        if JsonFormationFileReader.is_json(lines):
-            return JsonFormationFileReader(), JsonFormationFileReader.get_method(lines)
-        if lines[0].find('Static') >= 0:
-            return OldStaticFormationFileReader(), FormationType.Static
-        return OldDelaunayFormationFileReader(), FormationType.DelaunayTriangulation2
-    
-    def read_file(self, path) -> list[FormationIndexData]:
-        file = open(path, 'r')
-        lines = file.readlines()
-        reader, formation_type = self.get_reader(lines)
-        indexes, roles = reader.read_file(lines)
-        return indexes, roles, formation_type
+from src.strategy.formation_file_reader import FormationFileReaderFactory, FormationType
+from src.strategy.player_role import PlayerRole
 
 class FormationFile:
     def __init__(self, path, logger: logging.Logger):
@@ -133,11 +14,12 @@ class FormationFile:
         self._formation_type = FormationType.Static
         self._target_players = {}
         self._path = path
+        self._roles: dict[int, PlayerRole] = {}
         self.read_file(path)
         self.calculate()
 
     def read_file(self, path):
-        indexes, roles, self._formation_type = FormationFileReaderFactory().read_file(path)
+        indexes, self._roles, self._formation_type = FormationFileReaderFactory().read_file(path)
         
         if self._formation_type == FormationType.Static:
             data = indexes[0]
@@ -202,6 +84,9 @@ class FormationFile:
 
     def get_poses(self):
         return self._target_players
+    
+    def get_role(self, unum) -> PlayerRole:
+        return self._roles[unum]
 
     def __repr__(self):
         return self._path

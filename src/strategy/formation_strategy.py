@@ -1,10 +1,12 @@
 from src.interfaces.IPositionStrategy import IPositionStrategy
 from src.strategy.formation_file import *
 from src.interfaces.IAgent import IAgent
+from src.strategy.player_role import PlayerRole, RoleName, RoleType, RoleSide
 from enum import Enum
 from pyrusgeom.soccer_math import *
 from service_pb2 import *
 import logging
+
 
 
 class Situation(Enum):
@@ -112,8 +114,23 @@ class FormationStrategy(IPositionStrategy):
                 
         logger.debug(f'{self._poses=}')
         
-    def get_position(self, uniform_number):
+    def get_position(self, uniform_number) -> Vector2D:
         return self._poses[uniform_number]
+    
+    def get_role_name(self, uniform_number) -> int:
+        return self.current_formation_file.get_role(uniform_number).name
+    
+    def get_role_type(self, uniform_number) -> int:
+        return self.current_formation_file.get_role(uniform_number).type
+    
+    def get_role_side(self, uniform_number) -> int:
+        return self.current_formation_file.get_role(uniform_number).side
+    
+    def get_role_pair(self, uniform_number) -> int:
+        return self.current_formation_file.get_role(uniform_number).pair
+    
+    def get_role(self, uniform_number) -> PlayerRole:
+        return self.current_formation_file.get_role(uniform_number)
     
     def get_offside_line(self):
         home_poses_x = [pos.x() for pos in self._poses.values()]
