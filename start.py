@@ -46,7 +46,7 @@ def run_start_script(args, rpc_port):
     arguments = ['bash']
     if args.player or args.coach or args.goalie:
         if args.debug:
-            arguments += ['start-agent-debug.sh', '--coach' if args.coach else '--goalie' if args.goalie else '--player']
+            arguments += ['start-debug-agent.sh', '--coach' if args.coach else '--goalie' if args.goalie else '--player']
         else:
             arguments += ['start-agent.sh', '--coach' if args.coach else '--goalie' if args.goalie else '--player']
     else:
