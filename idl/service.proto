@@ -1668,6 +1668,7 @@ message ServerParam {
   float goal_area_length = 224;
   float center_circle_r = 225;
   float goal_post_radius = 226;
+  float pitch_margin = 227;
 }
 
 message PlayerParam {
