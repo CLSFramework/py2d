@@ -2,6 +2,7 @@ from src.interfaces.IDecisionMaker import IDecisionMaker
 from src.interfaces.IAgent import IAgent
 from src.decision_makers.kick_decision_maker import KickDecisionMaker
 from src.decision_makers.move_decision_maker import MoveDecisionMaker
+from src.decision_makers.starter_move_decision_maker import StarterMoveDecisionMaker
 
 
 class PlayOnDecisionMaker(IDecisionMaker):
@@ -19,10 +20,13 @@ class PlayOnDecisionMaker(IDecisionMaker):
     def __init__(self):
         self.kick_decision_maker = KickDecisionMaker()
         self.move_decision_maker = MoveDecisionMaker()
+        self.startet_move_decision_maker = StarterMoveDecisionMaker()
         pass
     
     def make_decision(self, agent: IAgent):
         if agent.wm.self.is_kickable:
             self.kick_decision_maker.make_decision(agent)
         else:
-            self.move_decision_maker.make_decision(agent)
+            # If your team is a major team, please comment startet_move_decision_maker and uncomment move_decision_maker.
+            #self.move_decision_maker.make_decision(agent)
+            self.startet_move_decision_maker.make_decision(agent)
