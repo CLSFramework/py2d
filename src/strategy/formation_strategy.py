@@ -154,7 +154,7 @@ class FormationStrategy(IPositionStrategy):
                 
         logger.debug(f'{self._poses=}')
         
-    def get_position(self, uniform_number) -> Vector2D:
+    def get_position(self, uniform_number, agent: IAgent=None) -> Vector2D:
         return self._poses[uniform_number]
     
     def get_role_name(self, uniform_number) -> RoleName:

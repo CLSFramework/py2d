@@ -4,8 +4,10 @@ from src.utils.convertor import Convertor
 from pyrusgeom.geom_2d import *
 from pyrusgeom.soccer_math import *
 from service_pb2 import *
+from src.interfaces.IBehavior import IBehavior
 
-class Bhv_Block:
+
+class Bhv_Block(IBehavior):
     """
     Bhv_Block is a behavior class that determines whether an agent should block the ball based on the predicted future positions of the ball and the players.
     Methods
