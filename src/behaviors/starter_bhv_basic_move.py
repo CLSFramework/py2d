@@ -1,6 +1,6 @@
 from src.interfaces.IAgent import IAgent
 from service_pb2 import PlayerAction, Body_Intercept, Body_GoToPoint, Body_TurnToBall
-from src.behaviors.starter_strategy import Strategy
+from strategy.starter_strategy import Strategy
 from src.behaviors.starter_bhv_basic_tackle import BhvBasicTackle
 
 class BhvBasicMove():

@@ -2,13 +2,19 @@ from src.interfaces.IAgent import IAgent
 from service_pb2 import RpcVector2D, GameModeType
 from pyrusgeom.soccer_math import bound, inertia_n_step_point
 from pyrusgeom.vector_2d import Vector2D
+from src.interfaces.IPositionStrategy import IPositionStrategy
+import logging
+from src.utils.convertor import Convertor
 
-class Strategy:
+
+class StarterStrategy(IPositionStrategy):
+    def __init__(self, logger: logging.Logger):
+        self.logger = logger
     
-    def __init__(self):
+    def update(self, agent: IAgent):
         pass
     
-    def get_home_pos(agent: IAgent, uni_number: int) -> RpcVector2D:
+    def get_position(uni_number: int, agent: IAgent) -> Vector2D:
         wm = agent.wm
         if wm.game_mode_type in [GameModeType.BeforeKickOff, GameModeType.AfterGoal_]:
             kick_off_position = [None] * 12
@@ -66,9 +72,7 @@ class Strategy:
                 
             for unum in range(1, 12):
                 positions[unum].x = min(positions[unum].x, max_x)
-    
-        return positions[uni_number]
-            
+        return Convertor.convert_rpc_vector2d_to_vector2d(positions[uni_number])
             
     s_recover_mode = False
     
@@ -84,18 +88,18 @@ class Strategy:
 
         # Check recover mode
         if wm.self.stamina_capacity == 0:
-            Strategy.s_recover_mode = False
+            StarterStrategy.s_recover_mode = False
         elif wm.self.stamina < agent.server_params.stamina_max * 0.5:
-            Strategy.s_recover_mode = True
+            StarterStrategy.s_recover_mode = True
         elif wm.self.stamina > agent.server_params.stamina_max * 0.7:
-            Strategy.s_recover_mode = False
+            StarterStrategy.s_recover_mode = False
 
         # Initialize dash_power with max_dash_power
         dash_power = agent.server_params.max_dash_power
         my_inc = (agent.player_types[agent.wm.self.id].stamina_inc_max * wm.self.recovery)
         if wm.our_defense_line_x > wm.self.position.x and wm.ball.position.x < wm.our_defense_line_x + 20.0:
             dash_power = agent.server_params.max_dash_power
-        elif Strategy.s_recover_mode:
+        elif StarterStrategy.s_recover_mode:
             dash_power = my_inc - 25.0  # Preferred recovery value
             dash_power = max(dash_power, 0)
         elif mate_min <= 1 and wm.ball.dist_from_self < 20.0:
