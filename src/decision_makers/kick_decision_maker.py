@@ -10,11 +10,10 @@ from src.behaviors.bhv_starter_kick_planner import BhvStarterKickPlanner
 class KickDecisionMaker(IDecisionMaker):
     def __init__(self):
         self.bhv_kick_planner = BhvKickPlanner()
-        self.bhv_kick_planner = BhvStarterKickPlanner()
+        #self.bhv_kick_planner = BhvStarterKickPlanner()
 
     def make_decision(self, agent: IAgent):
         agent.logger.debug("--- WithBallDecisionMaker ---")
         from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
         assert isinstance(agent, SamplePlayerAgent)
-        #self.bhv_kick_planner.execute(agent)
         self.bhv_kick_planner.execute(agent)

@@ -5,7 +5,7 @@ from service_pb2 import *
 
 
 
-class Shoot(IBehavior):
+class BhvStarterShoot(IBehavior):
     def __init__(self):
         pass
     

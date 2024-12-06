@@ -6,7 +6,7 @@ from pyrusgeom.sector_2d import Sector2D
 from service_pb2 import *
 
 
-class Dribble(IBehavior):
+class BhvStarterDribble(IBehavior):
 
     def __init__(self):
         pass

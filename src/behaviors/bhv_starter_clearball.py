@@ -6,7 +6,7 @@ from src.utils.tools import Tools
 from pyrusgeom import vector_2d
 from service_pb2 import *
 
-class ClearBall(IBehavior):
+class BhvStarterClearBall(IBehavior):
 
     def __init__(self):
         pass

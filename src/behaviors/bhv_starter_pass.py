@@ -6,7 +6,7 @@ from src.utils.tools import Tools
 from service_pb2 import *
 
 
-class Pass(IBehavior):
+class BhvStarterPass(IBehavior):
 
     def __init__(self):
         pass
