@@ -7,7 +7,7 @@ from src.interfaces.IAgent import IAgent
 
 class IPositionStrategy(ABC):
     @abstractmethod
-    def get_position(self, uniform_number) -> Vector2D:
+    def get_position(self, uniform_number, agent: IAgent) -> Vector2D:
         pass
     
     @abstractmethod

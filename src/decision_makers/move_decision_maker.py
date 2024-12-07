@@ -5,6 +5,8 @@ from pyrusgeom.geom_2d import *
 from service_pb2 import *
 from src.utils.convertor import Convertor
 from src.behaviors.bhv_block import Bhv_Block
+from src.behaviors.bhv_tackle import BhvTackle
+from src.behaviors.bhv_starter_tackle import BhvStarterTackle
 
 
 class MoveDecisionMaker(IDecisionMaker):
@@ -22,7 +24,9 @@ class MoveDecisionMaker(IDecisionMaker):
         agent (SamplePlayerAgent): The agent for which the decision is being made.
     """
     def __init__(self):
-        pass
+        self.bhv_tackle = BhvTackle()
+        # self.bhv_tackle = BhvStarterTackle()
+        self.bhv_block = Bhv_Block()
     
     def make_decision(self, agent: IAgent):
         """
@@ -54,7 +58,7 @@ class MoveDecisionMaker(IDecisionMaker):
         agent.logger.debug(f'------ NoBallDecisionMaker ------')
         wm: WorldModel = agent.wm
         
-        agent.add_action(PlayerAction(helios_basic_tackle=HeliosBasicTackle(min_prob=0.8, body_thr=100.0)))
+        self.bhv_tackle.execute(agent)
         
         self_min = wm.intercept_table.self_reach_steps
         opp_min = wm.intercept_table.first_opponent_reach_steps
@@ -68,12 +72,11 @@ class MoveDecisionMaker(IDecisionMaker):
             return
         
         if opp_min < min(self_min, tm_min):
-            bhv_block = Bhv_Block()
-            if bhv_block.execute(agent):
+            if self.bhv_block.execute(agent):
                 return
             
         target_point = agent.strategy.get_position(wm.self.uniform_number)
-        dash_power = self.get_normal_dash_power(agent)
+        dash_power = MoveDecisionMaker.get_normal_dash_power(agent)
         
         ball_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)
         self_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.self.position)
@@ -95,8 +98,10 @@ class MoveDecisionMaker(IDecisionMaker):
             
         agent.logger.debug(f'NoBallDecisionMaker: Body_GoToPoint {target_point} {dash_power} {dist_thr} or Body_TurnToBall')
         
+    s_recover_mode = False
     
-    def get_normal_dash_power(self, agent: IAgent) -> float:
+    @staticmethod
+    def get_normal_dash_power(agent: IAgent) -> float:
         """
         Get the normal dash power for the agent based on the current world model state.
         This method calculates the normal dash power for the agent based on the stamina level, ball position, and other factors.
@@ -106,7 +111,6 @@ class MoveDecisionMaker(IDecisionMaker):
             float: The normal dash power for the agent.
         """
         wm = agent.wm
-        self.s_recover_mode = False
         
         player_type: PlayerType = agent.player_types[wm.self.type_id]
         sp: ServerParam = agent.server_params
@@ -119,11 +123,11 @@ class MoveDecisionMaker(IDecisionMaker):
         opp_min = wm.intercept_table.first_opponent_reach_steps
         
         if wm.self.stamina_capacity < 0.01:
-            self.s_recover_mode = False
+            MoveDecisionMaker.s_recover_mode = False
         elif wm.self.stamina < sp.stamina_max * 0.5:
-            self.s_recover_mode = True
+            MoveDecisionMaker.s_recover_mode = True
         elif wm.self.stamina > sp.stamina_max * 0.7:
-            self.s_recover_mode = False
+            MoveDecisionMaker.s_recover_mode = False
         
         dash_power = sp.max_dash_power
         my_inc = player_type.stamina_inc_max * wm.self.recovery
@@ -131,7 +135,7 @@ class MoveDecisionMaker(IDecisionMaker):
         if wm.our_defense_line_x > wm.self.position.x and wm.ball.position.x < wm.our_defense_line_x + 20.0:
             agent.logger.debug(f'NoBallDecisionMaker: correct DF line. keep max power')
             dash_power = sp.max_dash_power
-        elif self.s_recover_mode:
+        elif MoveDecisionMaker.s_recover_mode:
             dash_power = my_inc - 25.0
             if dash_power < 0.0:
                 dash_power = 0.0
