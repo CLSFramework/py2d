@@ -22,6 +22,8 @@ class PlayOnDecisionMaker(IDecisionMaker):
         pass
     
     def make_decision(self, agent: IAgent):
+        from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
+        assert isinstance(agent, SamplePlayerAgent)
         if agent.wm.self.is_kickable:
             self.kick_decision_maker.make_decision(agent)
         else:
