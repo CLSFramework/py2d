@@ -25,6 +25,7 @@ class MoveDecisionMaker(IDecisionMaker):
     """
     def __init__(self):
         self.bhv_tackle = BhvTackle()
+        #self.bhv_tackle = BhvStarterTackle(0.8, 80) Uncomment this for starter team
         # self.bhv_tackle = BhvStarterTackle()
         self.bhv_block = Bhv_Block()
     
