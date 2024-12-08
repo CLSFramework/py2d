@@ -10,7 +10,7 @@ from src.behaviors.bhv_starter_kick_planner import BhvStarterKickPlanner
 class KickDecisionMaker(IDecisionMaker):
     def __init__(self):
         self.bhv_kick_planner = BhvKickPlanner()
-        # self.bhv_kick_planner = BhvStarterKickPlanner()
+        #self.bhv_kick_planner = BhvStarterKickPlanner()
 
     def make_decision(self, agent: IAgent):
         agent.logger.debug("--- WithBallDecisionMaker ---")
