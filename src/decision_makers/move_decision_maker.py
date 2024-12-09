@@ -7,6 +7,7 @@ from src.utils.convertor import Convertor
 from src.behaviors.bhv_block import Bhv_Block
 from src.behaviors.bhv_tackle import BhvTackle
 from src.behaviors.bhv_starter_tackle import BhvStarterTackle
+from src.strategy.starter_strategy import StarterStrategy
 
 
 class MoveDecisionMaker(IDecisionMaker):
@@ -25,6 +26,7 @@ class MoveDecisionMaker(IDecisionMaker):
     """
     def __init__(self):
         self.bhv_tackle = BhvTackle()
+        #self.bhv_tackle = BhvStarterTackle(0.8, 80) Uncomment this for starter team
         # self.bhv_tackle = BhvStarterTackle()
         self.bhv_block = Bhv_Block()
     
