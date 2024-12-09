@@ -6,12 +6,12 @@ from pyrusgeom.sector_2d import Sector2D
 from service_pb2 import *
 
 
-class BhvStarterDribble(IBehavior):
+class BhvStarterDribble():
 
     def __init__(self):
         pass
 
-    def execute(self, agent: IAgent):
+    def execute(agent: IAgent):
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
         dribble_angle = (Vector2D(52.5, 0) - ball_pos).th().degree()

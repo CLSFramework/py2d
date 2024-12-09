@@ -6,12 +6,12 @@ from src.utils.tools import Tools
 from service_pb2 import *
 
 
-class BhvStarterPass(IBehavior):
+class BhvStarterPass():
 
     def __init__(self):
         pass
 
-    def execute(self, agent: IAgent) -> PlayerAction:
+    def execute(agent: IAgent) -> PlayerAction:
         
         wm = agent.wm
         target = []

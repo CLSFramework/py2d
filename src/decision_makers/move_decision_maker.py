@@ -7,6 +7,7 @@ from src.utils.convertor import Convertor
 from src.behaviors.bhv_block import Bhv_Block
 from src.behaviors.bhv_tackle import BhvTackle
 from src.behaviors.bhv_starter_tackle import BhvStarterTackle
+from src.strategy.starter_strategy import StarterStrategy
 
 
 class MoveDecisionMaker(IDecisionMaker):
