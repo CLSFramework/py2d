@@ -135,7 +135,6 @@ message PenaltyKickState {
   int32 our_score = 5;
   int32 their_score = 6;
   bool is_kick_taker = 7;
-  int32 cycle = 8;
 }
 
 /**

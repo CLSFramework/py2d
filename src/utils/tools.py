@@ -365,8 +365,3 @@ class Tools:
     
     def BallInertiaFinalPoint(initial_pos: Vector2D, initial_vel: Vector2D, ball_decay: float):
         return Vector2D(initial_pos) + inertia_final_travel(initial_vel, ball_decay)
-    
-    def OpponentGoalie(agent: IAgent) -> Player:
-        for i in agent.wm.opponents:
-            if i.uniform_number == agent.wm.their_goalie_uniform_number : 
-                return i
