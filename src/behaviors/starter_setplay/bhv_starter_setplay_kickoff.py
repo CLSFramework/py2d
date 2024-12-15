@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IAgent import IAgent
 #from src.setplay.BhvGoToPlacedBall import BhvGoToPlacedBall
 #from src.setplay.BhvSetPlay import BhvSetPlay
@@ -8,6 +9,8 @@ from src.utils.tools import Tools
 from src.strategy.starter_strategy import StarterStrategy
 from src.utils.convertor import Convertor
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 class BhvStarterSetPlayKickOff:
     def __init__(self):
         pass
@@ -101,10 +104,10 @@ class BhvStarterSetPlayKickOff:
             return actions
         return actions
 
-    def do_move(agent: IAgent):
+    def do_move(agent: "SamplePlayerAgent"):
         wm = agent.wm
         actions = []
-        target = StarterStrategy.get_position(agent, wm.self.uniform_number)
+        target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
         target_point.set_x(min(-0.5, target_point.x()))
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay

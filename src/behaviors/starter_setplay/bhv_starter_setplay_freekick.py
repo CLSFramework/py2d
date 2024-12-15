@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 import math
 from src.interfaces.IAgent import IAgent
 from service_pb2 import *
@@ -11,6 +12,9 @@ from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
 from pyrusgeom.angle_deg import AngleDeg
 from src.strategy.starter_strategy import StarterStrategy
 from src.utils.convertor import Convertor
+
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 
 class BhvStarterSetPlayFreeKick:
     def __init__(self):
@@ -114,10 +118,10 @@ class BhvStarterSetPlayFreeKick:
 
         return []
 
-    def do_move(agent:IAgent):
+    def do_move(agent: "SamplePlayerAgent"):
         wm = agent.wm
         actions = []
-        target_point_rpc = StarterStrategy.get_position(agent, wm.self.uniform_number)
+        target_point_rpc = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Convertor.convert_rpc_vector2d_to_vector2d(target_point_rpc)
         ball_positions = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)
         self_positions = Convertor.convert_rpc_vector2d_to_vector2d(wm.self.position)

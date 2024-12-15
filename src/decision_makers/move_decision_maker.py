@@ -76,7 +76,7 @@ class MoveDecisionMaker(IDecisionMaker):
             if self.bhv_block.execute(agent):
                 return
             
-        target_point = agent.strategy.get_position(wm.self.uniform_number)
+        target_point = agent.strategy.get_position(wm.self.uniform_number, agent)
         dash_power = MoveDecisionMaker.get_normal_dash_power(agent)
         
         ball_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)

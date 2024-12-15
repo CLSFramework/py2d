@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IAgent import IAgent
 #from src.setplay.BhvSetPlay import BhvSetPlay
 from service_pb2 import *
@@ -11,6 +12,8 @@ from pyrusgeom.rect_2d import Rect2D
 from pyrusgeom.angle_deg import AngleDeg
 from src.utils.convertor import Convertor
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 class BhvStarterTheirGoalKickMove:
     def __init__(self):
         pass
@@ -69,12 +72,12 @@ class BhvStarterTheirGoalKickMove:
         
         return actions
 
-    def do_normal(agent: IAgent):
+    def do_normal(agent: "SamplePlayerAgent"):
         wm = agent.wm
         actions = []
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)
-        targ = StarterStrategy.get_position(agent, wm.self.uniform_number)
+        targ = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(targ.x, targ.y)
 
         # Attract to ball

@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IBehavior import IBehavior
 from src.interfaces.IAgent import IAgent
 import math
@@ -14,7 +15,9 @@ from pyrusgeom.circle_2d import Circle2D
 from src.utils.convertor import Convertor
 from src.strategy.starter_strategy import StarterStrategy
 
-
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
+    
 class BhvStarterSetPlay(IBehavior):
     def __init__(self):
         pass
@@ -71,10 +74,10 @@ class BhvStarterSetPlay(IBehavior):
 
         
 
-    def get_set_play_dash_power(agent: IAgent):
+    def get_set_play_dash_power(agent: "SamplePlayerAgent"):
         wm = agent.wm
         if not wm.is_our_set_play:
-            target_point = StarterStrategy.get_position(agent, wm.self.uniform_number)
+            target_point = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
             if target_point.x > wm.self.position.x:
                 if (wm.ball.position.x < -30.0 and
                         target_point.x < wm.ball.position.x):
@@ -146,7 +149,7 @@ class BhvStarterSetPlay(IBehavior):
             count += 1
         return target_point
 
-    def is_kicker(agent: IAgent):
+    def is_kicker(agent: "SamplePlayerAgent"):
         wm = agent.wm
         min_dist = 10000.0
         unum = 0
@@ -157,7 +160,7 @@ class BhvStarterSetPlay(IBehavior):
             elif i == wm.our_goalie_uniform_number:
                 continue
             else:
-                h_p:RpcVector2D = StarterStrategy.get_position(agent, i)
+                h_p:RpcVector2D = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
             home_pos = Vector2D(h_p.x, h_p.y)
             if(home_pos.dist(ball_position) < min_dist):
                 min_dist = home_pos.dist(ball_position)
@@ -235,9 +238,9 @@ class BhvStarterSetPlay(IBehavior):
             return True
         return False
 
-    def doBasicTheirSetPlayMove(agent: IAgent):
+    def doBasicTheirSetPlayMove(agent: "SamplePlayerAgent"):
         wm = agent.wm
-        target = StarterStrategy.get_position(agent, wm.self.uniform_number)
+        target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)

@@ -8,15 +8,16 @@ import logging
 from src.utils.convertor import Convertor
 
 
-class StarterStrategy():
-    def __init__(self):
-        pass
+class StarterStrategy(IPositionStrategy):
+    def __init__(self, logger: logging.Logger):
+        self.logger = logger
+        self._poses: dict[int, Vector2D] = {i: Vector2D(0, 0) for i in range(12)}
 
+    
     def update(self, agent: IAgent):
-        raise NotImplementedError("StarterStrategy.update not implemented")
         pass
-        
-    def get_position(agent: IAgent, uniform_number: int) -> RpcVector2D:
+    
+    def get_position(self, uniform_number: int, agent: IAgent) -> Vector2D:
         wm = agent.wm
         if wm.game_mode_type in [GameModeType.BeforeKickOff, GameModeType.AfterGoal_]:
             kick_off_position = [None] * 12
@@ -31,7 +32,9 @@ class StarterStrategy():
             kick_off_position[9] = RpcVector2D(x=-11, y=0)
             kick_off_position[10] = RpcVector2D(x=-5, y=-20)
             kick_off_position[11] = RpcVector2D(x=-5, y=20)
-            return kick_off_position[uniform_number]
+            for i in range(1, 12):
+                self._poses[i] = Convertor.convert_rpc_vector2d_to_vector2d(kick_off_position[i])
+            return Convertor.convert_rpc_vector2d_to_vector2d(kick_off_position[uniform_number])
         ball_step = 0
         if wm.game_mode_type == GameModeType.PlayOn or wm.game_mode_type == GameModeType.GoalKick_:
             ball_step = min(1000, wm.intercept_table.first_teammate_reach_steps)
@@ -74,8 +77,9 @@ class StarterStrategy():
                 
             for unum in range(1, 12):
                 positions[unum].x = min(positions[unum].x, max_x)
-    
-        return positions[uniform_number]
+        for i in range(1, 12):
+            self._poses[i] = Convertor.convert_rpc_vector2d_to_vector2d(positions[uniform_number])
+        return Convertor.convert_rpc_vector2d_to_vector2d(positions[uniform_number])
             
             
     s_recover_mode = False
@@ -113,3 +117,14 @@ class StarterStrategy():
         else:
             dash_power = min(my_inc * 1.7, agent.server_params.max_dash_power)
         return dash_power
+    
+    def get_offside_line(self):
+        home_poses_x = [pos.x() for pos in self._poses.values()]
+        home_poses_x.pop(0)
+        home_poses_x.sort()
+        if len(home_poses_x) > 1:
+            return home_poses_x[1]
+        elif len(home_poses_x) == 1:
+            return home_poses_x[0]
+        else:
+            return 0.0

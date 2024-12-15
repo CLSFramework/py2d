@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 import math
 from src.interfaces.IAgent import IAgent
 from service_pb2 import *
@@ -10,6 +11,9 @@ from pyrusgeom.soccer_math import *
 #from src.setplay.BhvSetPlay import BhvSetPlay
 from src.strategy.starter_strategy import StarterStrategy
 from src.utils.convertor import Convertor
+
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 class BhvStarterSetPlayKickIn:
 
     def __init__():
@@ -119,11 +123,11 @@ class BhvStarterSetPlayKickIn:
 
         return actions
 
-    def do_move(agent: IAgent):
+    def do_move(agent: "SamplePlayerAgent"):
         wm = agent.wm
         actions = []
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
-        target = StarterStrategy.get_position(agent, wm.self.uniform_number)
+        target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
         avoid_opponent = False
         

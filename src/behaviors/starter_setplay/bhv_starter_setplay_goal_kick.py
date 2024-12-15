@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
@@ -10,6 +11,8 @@ from src.strategy.starter_strategy import StarterStrategy
 from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
 from src.utils.convertor import Convertor
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 class BhvStarterSetPlayGoalKick:
     def __init__():
         pass
@@ -127,7 +130,7 @@ class BhvStarterSetPlayGoalKick:
         
         return actions
 
-    def do_move(agent:IAgent):
+    def do_move(agent:"SamplePlayerAgent"):
         actions = []
         actions += BhvStarterSetPlayGoalKick.do_intercept(agent)
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
@@ -136,7 +139,7 @@ class BhvStarterSetPlayGoalKick:
         dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
 
-        target_rpc = StarterStrategy.get_position(agent, wm.self.uniform_number)
+        target_rpc = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target_rpc.x, target_rpc.y)
         target_point.set_y(target_point.y() + wm.ball.position.y * 0.5)
 

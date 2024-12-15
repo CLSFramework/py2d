@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 import math
 from src.interfaces.IAgent import IAgent
 from service_pb2 import *
@@ -16,6 +17,8 @@ from pyrusgeom.geom_2d import *
 import math
 from src.utils.convertor import Convertor
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 class BhvStarterSetPlayIndirectFreeKick:
     def __init__(self):
         pass
@@ -198,10 +201,10 @@ class BhvStarterSetPlayIndirectFreeKick:
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         return BhvStarterSetPlay.get_avoid_circle_point(wm, point)
 
-    def do_offense_move(agent: IAgent):
+    def do_offense_move(agent: "SamplePlayerAgent"):
         wm = agent.wm
         actions = []
-        target_point = StarterStrategy.get_position(agent, wm.self.uniform_number)
+        target_point = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point.x = min(wm.offside_line_x - 1.0, target_point.x)
         target_point_vector2d = Vector2D(target_point.x, target_point.y)
 
@@ -234,14 +237,14 @@ class BhvStarterSetPlayIndirectFreeKick:
         
         return actions
 
-    def do_defense_move(agent: IAgent):
+    def do_defense_move(agent: "SamplePlayerAgent"):
         actions = []
         SP = agent.server_params
         wm = agent.wm
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
         self_velocity = Vector2D(wm.self.velocity.x, wm.self.velocity.y)
-        target = StarterStrategy.get_position(agent, wm.self.uniform_number)
+        target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
         adjusted_point = BhvStarterSetPlayIndirectFreeKick.get_avoid_circle_point(agent, target_point)
 
