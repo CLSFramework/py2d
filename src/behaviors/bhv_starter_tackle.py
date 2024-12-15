@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IAgent import IAgent
 from src.utils.convertor import Convertor
 from pyrusgeom.geom_2d import *
@@ -5,16 +6,16 @@ from pyrusgeom.soccer_math import *
 from service_pb2 import *
 from src.interfaces.IBehavior import IBehavior
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 
 class BhvStarterTackle(IBehavior):
     def __init__(self, min_prob: float, body_thr: float):
         self.min_prob = min_prob
         self.body_thr = body_thr
     
-    def execute(self, agent: IAgent) -> bool:
+    def execute(self, agent: "SamplePlayerAgent"):
         agent.logger.debug("BhvStarterTackle.execute")
-        from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
-        assert isinstance(agent, SamplePlayerAgent)
         wm = agent.wm
         use_foul = False
         tackle_prob = wm.self.tackle_probability

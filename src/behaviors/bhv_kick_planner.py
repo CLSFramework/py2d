@@ -1,9 +1,12 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IBehavior import IBehavior
 from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 
 class BhvKickPlanner(IBehavior):
     """
@@ -33,10 +36,8 @@ class BhvKickPlanner(IBehavior):
     def __init__(self):
         pass
 
-    def execute(self, agent: IAgent):
+    def execute(self, agent: "SamplePlayerAgent"):
         agent.logger.debug("--- WithBallDecisionMaker ---")
-        from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
-        assert isinstance(agent, SamplePlayerAgent)
 
         agent.add_action(
             PlayerAction(helios_offensive_planner=self._get_helios_offensive_planner(agent))

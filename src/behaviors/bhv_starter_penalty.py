@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IBehavior import IBehavior
 import numpy as np
 from src.interfaces.IAgent import IAgent
@@ -14,11 +15,15 @@ from service_pb2 import *
 from src.utils.convertor import Convertor
 from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
+
 class BhvStarterPenalty(IBehavior):
     def __init__(self):
         pass
     
-    def execute(self, agent: IAgent) -> bool:
+    def execute(self, agent: "SamplePlayerAgent"):
+        agent.logger.debug("BhvStarterPenalty.execute")
         wm = agent.wm
         state = wm.penalty_kick_state
         actions = []

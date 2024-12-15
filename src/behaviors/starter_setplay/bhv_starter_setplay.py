@@ -13,6 +13,8 @@ from pyrusgeom.segment_2d import Segment2D
 from pyrusgeom.circle_2d import Circle2D
 from src.utils.convertor import Convertor
 from src.strategy.starter_strategy import StarterStrategy
+
+
 class BhvStarterSetPlay(IBehavior):
     def __init__(self):
         pass

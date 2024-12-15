@@ -10,9 +10,11 @@ class SamplePlayerAgent(IAgent, ABC):
     def __init__(self, logger) -> None:
         super().__init__(logger)
         self.logger.info('SamplePlayerAgent created')
-        self.decision_maker = DecisionMaker()
-        self.strategy = FormationStrategy(self.logger)
-        # self.strategy = StarterStrategy(self.logger)
+        
+        self.use_starter_code = False
+        
+        self.decision_maker = DecisionMaker(self)
+        self.strategy = FormationStrategy(self.logger) if not self.use_starter_code else StarterStrategy(self.logger)
         self.wm: WorldModel = None
     
     def update_actions(self, wm:WorldModel):

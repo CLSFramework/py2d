@@ -1,17 +1,17 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
 from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 # from src.behaviors.bhv_penalty import BhvPenalty
 from src.behaviors.bhv_starter_penalty import BhvStarterPenalty
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 
 class PenaltyDecisionMaker(IDecisionMaker):
-    def __init__(self):
-        #self.bhv_penalty = BhvPenalty()
-        self.bhv_penalty = BhvStarterPenalty()
+    def __init__(self, agent: "SamplePlayerAgent"):
+        self.bhv_penalty = BhvPenalty() if not agent.use_starter_code else BhvStarterPenalty()
     
-    def make_decision(self, agent: IAgent):
+    def make_decision(self, agent: "SamplePlayerAgent"):
         agent.logger.debug("PenaltyDecisionMaker.make_decision")
-        from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
-        assert isinstance(agent, SamplePlayerAgent)
         self.bhv_penalty.execute(agent)
