@@ -9,8 +9,19 @@ from service_pb2 import PlayerType, Player, GameModeType, ServerParam, RpcVector
 from copy import copy
 
 class Tools:
+    """Utility class containing helper methods for soccer simulation calculations"""
+
     @staticmethod
     def inertia_final_point(playerType: PlayerType, position: Vector2D, velocity: Vector2D) -> Vector2D:
+        """Calculate final position after inertia movement
+        
+        Args:
+            playerType: Player type parameters
+            position: Current position
+            velocity: Current velocity
+        Returns:
+            Vector2D: Final position after decay
+        """
         return smath.inertia_final_point(position, velocity, playerType.player_decay)
         
     @staticmethod
@@ -23,6 +34,16 @@ class Tools:
         
     @staticmethod
     def predict_kick_count(agent: IAgent, kicker_uniform_number, first_ball_speed, ball_move_angle: AngleDeg):
+        """Predict number of kicks needed to achieve target ball movement
+        
+        Args:
+            agent: Agent instance
+            kicker_uniform_number: Uniform number of kicking player
+            first_ball_speed: Initial ball speed
+            ball_move_angle: Target angle for ball movement
+        Returns:
+            int: Predicted number of kicks needed
+        """
         if agent.wm.game_mode_type not in [GameModeType.PlayOn, GameModeType.PenaltyKick_]:
             return 1
 
@@ -175,6 +196,20 @@ class Tools:
     @staticmethod
     def predict_opponent_reach_step(agent: IAgent, opponent: Player, first_ball_pos: Vector2D, first_ball_vel: Vector2D,
                                     ball_move_angle: AngleDeg, receive_point: Vector2D, max_cycle, description):
+        """Predict cycles needed for opponent to reach ball
+        
+        Args:
+            agent: Agent instance
+            opponent: Opponent player
+            first_ball_pos: Initial ball position
+            first_ball_vel: Initial ball velocity
+            ball_move_angle: Ball movement angle
+            receive_point: Target receiving position
+            max_cycle: Maximum cycles to consider
+            description: Movement description
+        Returns:
+            tuple: (cycles needed, final ball position)
+        """
         sp = agent.server_params
 
         penalty_area = Rect2D(Vector2D(sp.their_penalty_area_line_x, -sp.penalty_area_half_width ),
@@ -249,7 +284,13 @@ class Tools:
         return (copy(y), copy(x))
     
     def OpponentsFromSelf(agent: IAgent) -> list[Player]:
-
+        """Get list of opponents sorted by distance from self
+        
+        Args:
+            agent: Agent instance
+        Returns:
+            list[Player]: Sorted list of opponent players
+        """
         opp = agent.wm.opponents
         for i in opp:
             if i == None or i.uniform_number == agent.wm.self.uniform_number or i.uniform_number < 0:
@@ -261,7 +302,13 @@ class Tools:
         return opp
     
     def TeammatesFromSelf(agent: IAgent) -> list[Player]:
-
+        """Get list of teammates sorted by distance from self
+        
+        Args:
+            agent: Agent instance
+        Returns:
+            list[Player]: Sorted list of teammate players
+        """
         tms = agent.wm.teammates
         for i in tms:
             if i == None or i.uniform_number == agent.wm.self.uniform_number or i.uniform_number < 0:
@@ -273,7 +320,13 @@ class Tools:
         return tms
     
     def OpponentsFromBall(agent: IAgent):
-
+        """Get list of opponents sorted by distance from ball
+        
+        Args:
+            agent: Agent instance
+        Returns:
+            list[Player]: Sorted list of opponent players
+        """
         opp = agent.wm.opponents
         for i in opp:
             if i == None or i.uniform_number == agent.wm.self.uniform_number or i.uniform_number < 0:

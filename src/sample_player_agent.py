@@ -7,17 +7,35 @@ from service_pb2 import *
 
 
 class SamplePlayerAgent(IAgent, ABC):
+    """
+    A sample player agent implementation that handles decision making and strategy execution.
+    Inherits from IAgent and implements required abstract methods.
+    """
     def __init__(self, logger) -> None:
+        """
+        Initialize the player agent with required components.
+        
+        Args:
+            logger: Logger instance for debug/info messages
+        """
         super().__init__(logger)
         self.logger.info('SamplePlayerAgent created')
         
+        # Flag to switch between starter mode and major mode
         self.use_starter_code = False
         
+        # Initialize core components
         self.decision_maker = DecisionMaker(self)
         self.strategy = FormationStrategy(self.logger) if not self.use_starter_code else StarterStrategy(self.logger)
         self.wm: WorldModel = None
     
     def update_actions(self, wm:WorldModel):
+        """
+        Update agent actions based on the current world model state.
+        
+        Args:
+            wm (WorldModel): Current world model containing game state
+        """
         self.logger.debug(f'update_actions: {wm.cycle}')
         self.wm = wm
         self.actions.clear()
@@ -26,4 +44,10 @@ class SamplePlayerAgent(IAgent, ABC):
         self.logger.debug(f'actions: {self.actions}')
     
     def get_strategy(self):
+        """
+        Get the current strategy instance being used by the agent.
+        
+        Returns:
+            Strategy: Current strategy instance (FormationStrategy or StarterStrategy)
+        """
         return self.strategy
