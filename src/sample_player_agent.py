@@ -11,7 +11,7 @@ class SamplePlayerAgent(IAgent, ABC):
         super().__init__(logger)
         self.logger.info('SamplePlayerAgent created')
         
-        self.use_starter_code = True
+        self.use_starter_code = False
         
         self.decision_maker = DecisionMaker(self)
         self.strategy = FormationStrategy(self.logger) if not self.use_starter_code else StarterStrategy(self.logger)

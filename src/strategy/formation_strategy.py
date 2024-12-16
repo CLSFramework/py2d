@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IPositionStrategy import IPositionStrategy
 from src.strategy.formation_file import *
 from src.interfaces.IAgent import IAgent
@@ -8,6 +9,8 @@ from service_pb2 import *
 import logging
 
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 
 class Situation(Enum):
     """
@@ -86,7 +89,7 @@ class FormationStrategy(IPositionStrategy):
     def _set_formation(self, wm: WorldModel):
         self.selected_formation_name = '4-3-3-cyrus-base' # '4-3-3' '4-3-3-cyrus-base' '4-3-3-helios-base'
         
-    def update(self, agent: IAgent):
+    def update(self, agent: 'SamplePlayerAgent'):
         logger = agent.logger
         logger.debug(f'---- update strategy ----')
         
