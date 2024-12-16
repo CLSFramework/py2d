@@ -4,13 +4,33 @@ from service_pb2 import *
 
 
 class SampleCoachAgent(IAgent, ABC):
+    """
+    A sample coach agent implementation that handles team substitutions and tactics.
+    Inherits from IAgent and implements required abstract methods.
+    """
     def __init__(self, logger) -> None:
+        """
+        Initialize the coach agent.
+        
+        Args:
+            logger: Logger instance for debug/info messages
+        """
         super().__init__(logger)
         self.logger.info('SampleCoachAgent created')
         self.wm: WorldModel = None
         self.first_substitution = True
     
     def update_actions(self, wm:WorldModel) -> CoachActions:
+        """
+        Update coach actions based on the current world model state.
+        Currently implements basic Helios substitution strategy.
+        
+        Args:
+            wm (WorldModel): Current world model containing game state
+            
+        Returns:
+            CoachActions: List of coach actions to be executed
+        """
         self.logger.debug(f'update_actions: {wm.cycle}')
         self.wm = wm
         
