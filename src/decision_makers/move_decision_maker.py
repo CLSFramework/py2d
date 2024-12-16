@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
 from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
@@ -7,8 +8,12 @@ from src.utils.convertor import Convertor
 from src.behaviors.bhv_block import Bhv_Block
 from src.behaviors.bhv_tackle import BhvTackle
 from src.behaviors.bhv_starter_tackle import BhvStarterTackle
+from src.strategy.starter_strategy import StarterStrategy
 
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
+    
 class MoveDecisionMaker(IDecisionMaker):
     """
     A decision maker class for an agent when it does not have the ball.
@@ -23,12 +28,11 @@ class MoveDecisionMaker(IDecisionMaker):
         Parameters:
         agent (SamplePlayerAgent): The agent for which the decision is being made.
     """
-    def __init__(self):
-        self.bhv_tackle = BhvTackle()
-        # self.bhv_tackle = BhvStarterTackle()
+    def __init__(self, agent: "SamplePlayerAgent"):
+        self.bhv_tackle = BhvTackle() if not agent.use_starter_code else BhvStarterTackle(0.8, 80)
         self.bhv_block = Bhv_Block()
     
-    def make_decision(self, agent: IAgent):
+    def make_decision(self, agent: "SamplePlayerAgent"):
         """
         Make a decision for the agent when it does not have the ball.
         This method determines the best course of action for the agent based on the current state of the game world.
@@ -52,9 +56,6 @@ class MoveDecisionMaker(IDecisionMaker):
         Logging:
             - Logs debug information about the decisions made.
         """
-        from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
-        assert isinstance(agent, SamplePlayerAgent)
-        
         agent.logger.debug(f'------ NoBallDecisionMaker ------')
         wm: WorldModel = agent.wm
         
@@ -75,7 +76,7 @@ class MoveDecisionMaker(IDecisionMaker):
             if self.bhv_block.execute(agent):
                 return
             
-        target_point = agent.strategy.get_position(wm.self.uniform_number)
+        target_point = agent.strategy.get_position(wm.self.uniform_number, agent)
         dash_power = MoveDecisionMaker.get_normal_dash_power(agent)
         
         ball_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)

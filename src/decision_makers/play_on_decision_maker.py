@@ -1,8 +1,11 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
 from src.interfaces.IAgent import IAgent
 from src.decision_makers.kick_decision_maker import KickDecisionMaker
 from src.decision_makers.move_decision_maker import MoveDecisionMaker
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 
 class PlayOnDecisionMaker(IDecisionMaker):
     """
@@ -16,14 +19,12 @@ class PlayOnDecisionMaker(IDecisionMaker):
             Makes a decision based on the agent's ability to kick the ball.
             Delegates the decision to either kick_decision_maker or move_decision_maker.
     """
-    def __init__(self):
-        self.kick_decision_maker = KickDecisionMaker()
-        self.move_decision_maker = MoveDecisionMaker()
+    def __init__(self, agent: "SamplePlayerAgent"):
+        self.kick_decision_maker = KickDecisionMaker(agent)
+        self.move_decision_maker = MoveDecisionMaker(agent)
         pass
     
-    def make_decision(self, agent: IAgent):
-        from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
-        assert isinstance(agent, SamplePlayerAgent)
+    def make_decision(self, agent: "SamplePlayerAgent"):
         if agent.wm.self.is_kickable:
             self.kick_decision_maker.make_decision(agent)
         else:
