@@ -103,11 +103,11 @@ class BhvStarterSetPlayKickIn:
             return []
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         if BhvStarterSetPlay.is_delaying_tactics_situation(agent):
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(0, 0), cycle=2)))
+            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
             return actions
 
         if not Tools.TeammatesFromBall(agent):
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(0, 0), cycle=2)))
+            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
             return actions
 
         if wm.set_play_count <= 3:

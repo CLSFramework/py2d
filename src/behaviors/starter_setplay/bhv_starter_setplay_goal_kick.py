@@ -67,7 +67,7 @@ class BhvStarterSetPlayGoalKick:
         
         actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(ball_final), distance_threshold=2.0, max_dash_power=agent.server_params.max_dash_power)))
         
-        actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(0, 0), cycle=2)))
+        actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
         
         return actions
 

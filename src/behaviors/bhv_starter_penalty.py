@@ -149,7 +149,7 @@ class BhvStarterPenalty(IBehavior):
             if opp_goalie:
                 actions.append(PlayerAction(neck_turn_to_point=Neck_TurnToPoint(target_point=opp_goalie.position)))
             else:
-                goal_c = RpcVector2D(agent.server_params.pitch_half_length,0)
+                goal_c = RpcVector2D(x=agent.server_params.pitch_half_length, y=0)
                 actions.append(PlayerAction(neck_turn_to_point=Neck_TurnToPoint(target_point=goal_c)))
             return []
 
@@ -338,7 +338,7 @@ class BhvStarterPenalty(IBehavior):
         actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(move_point), distance_threshold=0.5, max_dash_power=agent.server_params.max_dash_power)))
 
         if abs(agent.wm.self.body_direction) > 2.0:
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(0, 0), cycle=2)))
+            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
         return actions
 
     def do_goalie(self, agent: IAgent):

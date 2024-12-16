@@ -57,13 +57,13 @@ class BhvStarterSetPlayIndirectFreeKick:
         actions += BhvStarterPass.execute(agent)
         # wait(2)
         if wm.set_play_count <= 3:
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(50, 0), cycle=2)))
+            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=50, y=0), cycle=2)))
 
         # no teammate
         if not Tools.TeammatesFromBall(agent) or Tools.TeammatesFromBall()[0].dist_from_self > 35.0 or Tools.TeammatesFromBall()[0].position.x < -30.0:
             real_set_play_count = int(wm.cycle - wm.last_set_play_start_time)
             if real_set_play_count <= agent.server_params.drop_ball_time - 3:
-                actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(50, 0), cycle=2)))
+                actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=50, y=0), cycle=2)))
 
 
             target_point = Vector2D(agent.server_params.pitch_half_length,
