@@ -93,7 +93,7 @@ class BhvStarterTheirGoalKickMove:
                 target_point.set_y(target_point.y() * -1)
 
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(Convertor.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
         actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
         
         return actions
