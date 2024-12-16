@@ -288,6 +288,93 @@ TODO
 
 TODO
 
+## Decision Making
+
+```mermaid
+flowchart TD
+    subgraph SamplePlayerAgent
+        SamplePlayerAgent_update_actions[update_actions]
+    end
+
+    subgraph FormationStrategy
+        FormationStrategy_update[update]
+    end
+
+    subgraph StarterStrategy
+        StarterStrategy_update[update]
+    end
+
+    subgraph DecisionMaker
+        DecisionMaker_make_decision[make_decision]
+    end
+
+    subgraph PlayOnDecisionMaker
+        PlayOnDecisionMaker_make_decision[make_decision]
+    end
+    subgraph SetPlayDecisionMaker
+        SetPlayDecisionMaker_make_decision[make_decision]
+    end
+    subgraph PenaltyDecisionMaker
+        PenaltyDecisionMaker_make_decision[make_decision]
+    end
+    subgraph GoalieDecisionMaker
+        GoalieDecisionMaker_make_decision[make_decision]
+    end
+    subgraph KickDecisionMaker
+        KickDecisionMaker_make_decision[make_decision]
+    end
+    subgraph MoveDecisionMaker
+        MoveDecisionMaker_make_decision[make_decision]
+    end
+
+    subgraph BhvKickPlanner
+        BhvKickPlanner_execute[execute]
+    end
+
+    subgraph BhvStarterKickPlanner
+        BhvStarterKickPlanner_execute[execute]
+    end
+
+    subgraph BhvSetPlay
+        BhvSetPlay_execute[execute]
+    end
+
+    subgraph BhvStarterSetPlay
+        BhvStarterSetPlay_execute[execute]
+    end
+
+    subgraph BhvPenalty
+        BhvPenalty_execute[execute]
+    end
+
+    subgraph BhvStarterPenalty
+        BhvStarterPenalty_execute[execute]
+    end
+
+    SamplePlayerAgent_update_actions --> A{is starter?}
+    A -->|yes| StarterStrategy_update
+    A -->|no| FormationStrategy_update
+    SamplePlayerAgent_update_actions --> DecisionMaker_make_decision
+    DecisionMaker_make_decision --> B{status?}
+    B --> PlayOnDecisionMaker_make_decision
+    B --> SetPlayDecisionMaker_make_decision
+    B --> PenaltyDecisionMaker_make_decision
+    B --> GoalieDecisionMaker_make_decision
+    PlayOnDecisionMaker_make_decision --> C{is kickable?}
+    C -->|yes| KickDecisionMaker_make_decision
+    C -->|no| MoveDecisionMaker_make_decision
+    KickDecisionMaker_make_decision --> D{is starter?}
+    D -->|yes| BhvStarterKickPlanner_execute
+    D -->|no| BhvKickPlanner_execute
+    SetPlayDecisionMaker_make_decision --> E{is starter?}
+    E -->|yes| BhvStarterSetPlay_execute
+    E -->|no| BhvSetPlay_execute
+    PenaltyDecisionMaker_make_decision --> F{is starter?}
+    F -->|yes| BhvStarterPenalty_execute
+    F -->|no| BhvPenalty_execute
+
+```
+
 ## Citation
 
 - [Cross Language Soccer Framework](https://arxiv.org/pdf/2406.05621)
