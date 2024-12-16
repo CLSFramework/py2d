@@ -15,25 +15,27 @@ class BhvStarterSetPlayKickOff:
     def __init__(self):
         pass
     
-    def execute(agent: IAgent):
+    def execute(self, agent: IAgent):
         wm = agent.wm
         teammates = Tools.TeammatesFromBall(agent)
 
         if not teammates or teammates[0].dist_from_self > wm.self.dist_from_ball:
-            return BhvStarterSetPlayKickOff.do_kick(agent)
+            return self.do_kick(agent)
         else:
-            return BhvStarterSetPlayKickOff.do_move(agent)
+            return self.do_move(agent)
 
         return []
 
-    def do_kick(agent: IAgent):
+    def do_kick(self, agent: IAgent):
+        from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
         # Go to the ball position
         actions = []
-        from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
-        actions += BhvStarterGoToPlacedBall(0.0).execute(agent)
+        
+        actions += go_to_placed_ball.execute(agent)
         
         # Wait
-        actions += BhvStarterSetPlayKickOff.do_kick_wait(agent)
+        actions += self.do_kick_wait(agent)
             
         
         # Kick
@@ -75,15 +77,16 @@ class BhvStarterSetPlayKickOff:
         actions.append(PlayerAction(body_smart_kick=Body_SmartKick(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, first_speed_threshold=ball_speed * 0.96, max_steps=1)))
         return actions
         
-    def do_kick_wait(agent: IAgent) -> bool:
+    def do_kick_wait(self, agent: IAgent) -> bool:
+        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        setplay = BhvStarterSetPlay()
         actions = []
         wm = agent.wm
         real_set_play_count = int(wm.cycle - wm.last_set_play_start_time)
 
         if real_set_play_count >= agent.server_params.drop_ball_time - 5:
             return []
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
-        if BhvStarterSetPlay.is_delaying_tactics_situation(agent):
+        if setplay.is_delaying_tactics_situation(agent):
             actions.append(PlayerAction(body_turn_to_angle=Body_TurnToAngle(angle=180)))
             return actions
             
@@ -104,14 +107,15 @@ class BhvStarterSetPlayKickOff:
             return actions
         return actions
 
-    def do_move(agent: "SamplePlayerAgent"):
+    def do_move(self, agent: "SamplePlayerAgent"):
+        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        setplay = BhvStarterSetPlay()
         wm = agent.wm
         actions = []
         target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
         target_point.set_x(min(-0.5, target_point.x()))
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
-        dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)
+        dash_power = setplay.get_set_play_dash_power(agent)
         dist_thr = wm.ball.dist_from_self * 0.07
         if dist_thr < 1.0:
             dist_thr = 1.0

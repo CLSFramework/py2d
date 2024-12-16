@@ -3,17 +3,19 @@ from src.interfaces.IBehavior import IBehavior
 from src.interfaces.IAgent import IAgent
 import math
 from service_pb2 import *
-from src.behaviors.starter_setplay.bhv_starter_setplay_kickoff import *
-from src.behaviors.starter_setplay.bhv_starter_their_goal_kick_move import *
-from src.behaviors.starter_setplay.bhv_starter_setplay_freekick import *
-from src.behaviors.starter_setplay.bhv_starter_setplay_goal_kick import *
-from src.behaviors.starter_setplay.bhv_starter_setplay_kickin import *
-from src.behaviors.starter_setplay.bhv_starter_setplay_indirect_freekick import *
 from pyrusgeom.vector_2d import Vector2D
 from pyrusgeom.segment_2d import Segment2D
 from pyrusgeom.circle_2d import Circle2D
+from pyrusgeom.angle_deg import AngleDeg
 from src.utils.convertor import Convertor
 from src.strategy.starter_strategy import StarterStrategy
+from src.utils.tools import Tools
+from src.behaviors.starter_setplay.bhv_starter_setplay_kickoff import BhvStarterSetPlayKickOff
+from src.behaviors.starter_setplay.bhv_starter_their_goal_kick_move import BhvStarterTheirGoalKickMove
+from src.behaviors.starter_setplay.bhv_starter_setplay_freekick import BhvStarterSetPlayFreeKick
+from src.behaviors.starter_setplay.bhv_starter_setplay_goal_kick import BhvStarterSetPlayGoalKick
+from src.behaviors.starter_setplay.bhv_starter_setplay_kickin import BhvStarterSetPlayKickIn
+from src.behaviors.starter_setplay.bhv_starter_setplay_indirect_freekick import BhvStarterSetPlayIndirectFreeKick
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
@@ -23,58 +25,64 @@ class BhvStarterSetPlay(IBehavior):
         pass
 
     def execute(self, agent: IAgent):
-        actions = BhvStarterSetPlay.decision(agent)
+        actions = self.decision(agent)
         for i in actions:
             if not i == None:
                agent.add_action(i) 
                
-    def decision(agent: IAgent):
+    def decision(self, agent: IAgent):
+        setplay_kickoff = BhvStarterSetPlayKickOff()
+        their_goal_kick_move = BhvStarterTheirGoalKickMove()
+        setplay_freekick = BhvStarterSetPlayFreeKick()
+        setplay_goal_kick = BhvStarterSetPlayGoalKick()
+        setplay_kickin = BhvStarterSetPlayKickIn()
+        setplay_indirect_freekick = BhvStarterSetPlayIndirectFreeKick()
         wm = agent.wm
         if wm.self.is_goalie:
             if wm.game_mode_type != GameModeType.BackPass_ and wm.game_mode_type != GameModeType.IndFreeKick_:
                 return [PlayerAction(bhv_goalie_free_kick=bhv_goalieFreeKick())] #TODO
                 #return BhvSetPlayGoalKick.execute(agent) #TODO GoalieFreeKick
             else:
-                return BhvStarterSetPlayIndirectFreeKick.execute(agent)
+                return setplay_indirect_freekick.execute(agent)
             return []
 
         if wm.game_mode_type == GameModeType.KickOff_:
             if wm.game_mode_side == wm.our_side:
-                return BhvStarterSetPlayKickOff.execute(agent)
+                return setplay_kickoff.execute(agent)
             else:
-                return BhvStarterSetPlay.doBasicTheirSetPlayMove(agent)
+                return self.doBasicTheirSetPlayMove(agent)
 
 
         if wm.game_mode_type in [GameModeType.KickIn_, GameModeType.CornerKick_]:
             if wm.game_mode_side == wm.our_side:
-                return BhvStarterSetPlayKickIn.execute(agent)
+                return setplay_kickin.execute(agent)
             else:
-                return BhvStarterSetPlay.doBasicTheirSetPlayMove(agent)
+                return self.doBasicTheirSetPlayMove(agent)
 
         if wm.game_mode_type == GameModeType.GoalKick_:
             if wm.game_mode_side == wm.our_side:
-                return BhvStarterSetPlayGoalKick.execute(agent)
+                return setplay_goal_kick.execute(agent)
             else:
-                return BhvStarterTheirGoalKickMove.execute(agent)
+                return their_goal_kick_move.execute(agent)
 
         if wm.game_mode_type in [GameModeType.BackPass_, GameModeType.IndFreeKick_]:
-            return BhvStarterSetPlayIndirectFreeKick.execute(agent)
+            return setplay_indirect_freekick.execute(agent)
 
         if wm.game_mode_type in [GameModeType.FoulCharge_, GameModeType.FoulPush_]:
             if (wm.ball.position.x < agent.server_params.our_penalty_area_line_x + 1.0 and abs(wm.ball.position.y) < agent.server_params.penalty_area_half_width + 1.0):
-                return BhvStarterSetPlayIndirectFreeKick.execute(agent)
+                return setplay_indirect_freekick.execute(agent)
             elif (wm.ball.position.x > agent.server_params.their_penalty_area_line_x - 1.0 and
                   abs(wm.ball.position.y) < agent.server_params.penalty_area_half_width + 1.0):
-                return BhvStarterSetPlayIndirectFreeKick.execute(agent)
+                return setplay_indirect_freekick.execute(agent)
 
         if wm.is_our_set_play:
-            return BhvStarterSetPlayFreeKick.execute(agent)
+            return setplay_freekick.execute(agent)
         else:
-            return BhvStarterSetPlay.doBasicTheirSetPlayMove(agent)
+            return self.doBasicTheirSetPlayMove(agent)
 
         
 
-    def get_set_play_dash_power(agent: "SamplePlayerAgent"):
+    def get_set_play_dash_power(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         if not wm.is_our_set_play:
             target_point = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
@@ -91,7 +99,7 @@ class BhvStarterSetPlay(IBehavior):
                 return (agent.player_types[wm.self.id].stamina_inc_max * wm.self.recovery * rate)
         return wm.self.get_safety_dash_power
 
-    def can_go_to(agent: IAgent, count, wm, ball_circle: Circle2D, target_point:Vector2D) -> bool:
+    def can_go_to(self, agent: IAgent, count, wm, ball_circle: Circle2D, target_point:Vector2D) -> bool:
         wm = agent.wm
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
         move_line = Segment2D(self_position, target_point)
@@ -108,13 +116,13 @@ class BhvStarterSetPlay(IBehavior):
                 return True
         return False
 
-    def get_avoid_circle_point(wm, target_point,agent:IAgent):
+    def get_avoid_circle_point(self, wm, target_point,agent:IAgent):
         SP = agent.server_params
         wm = agent.wm
         avoid_radius = SP.center_circle_r + agent.player_types[wm.self.id].player_size
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         ball_circle = Circle2D(ball_position, avoid_radius)
-        if BhvStarterSetPlay.can_go_to(agent,-1, wm, ball_circle, target_point):
+        if self.can_go_to(agent,-1, wm, ball_circle, target_point):
             return target_point
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
         target_angle = Vector2D(target_point - self_position).th()
@@ -132,7 +140,7 @@ class BhvStarterSetPlay(IBehavior):
 
             if abs(new_target.x()) > SP.pitch_half_length + SP.pitch_margin - 1.0 or abs(new_target.y()) > SP.pitch_half_width + SP.pitch_margin - 1.0: #TODO pith_margin
                 break
-            if BhvStarterSetPlay.can_go_to(agent, count, wm, ball_circle, new_target):
+            if self.can_go_to(agent, count, wm, ball_circle, new_target):
                 return new_target
             a += angle_step
             count += 1
@@ -143,13 +151,13 @@ class BhvStarterSetPlay(IBehavior):
 
             if abs(new_target.x()) > SP.pitch_half_length + SP.pitch_margin - 1.0 or abs(new_target.y()) > SP.pitch_half_width + SP.pitch_margin - 1.0:
                 break
-            if BhvStarterSetPlay.can_go_to(agent, count, wm, ball_circle, new_target):
+            if self.can_go_to(agent, count, wm, ball_circle, new_target):
                 return new_target
             a -= angle_step
             count += 1
         return target_point
 
-    def is_kicker(agent: "SamplePlayerAgent"):
+    def is_kicker(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         min_dist = 10000.0
         unum = 0
@@ -160,7 +168,7 @@ class BhvStarterSetPlay(IBehavior):
             elif i == wm.our_goalie_uniform_number:
                 continue
             else:
-                h_p:RpcVector2D = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
+                h_p:RpcVector2D = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(i, agent))
             home_pos = Vector2D(h_p.x, h_p.y)
             if(home_pos.dist(ball_position) < min_dist):
                 min_dist = home_pos.dist(ball_position)
@@ -220,7 +228,7 @@ class BhvStarterSetPlay(IBehavior):
                 return True
         return kicker.uniform_number == wm.self.uniform_number'''
 
-    def is_delaying_tactics_situation(agent: IAgent):
+    def is_delaying_tactics_situation(self, agent: IAgent):
         wm = agent.wm
         real_set_play_count = wm.cycle - wm.last_set_play_start_time
         wait_buf = 15 if wm.game_mode_type == GameModeType.GoalKick_ else 2
@@ -238,12 +246,12 @@ class BhvStarterSetPlay(IBehavior):
             return True
         return False
 
-    def doBasicTheirSetPlayMove(agent: "SamplePlayerAgent"):
+    def doBasicTheirSetPlayMove(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
-        dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)
+        dash_power = self.get_set_play_dash_power(agent)
         ball_to_target = Vector2D(target_point - ball_position)
         if ball_to_target.r() < 11.0:
             xdiff = math.sqrt(math.pow(11.0, 2) - math.pow(ball_to_target.y(), 2))
@@ -255,7 +263,7 @@ class BhvStarterSetPlay(IBehavior):
         if wm.game_mode_type == GameModeType.KickOff_ and agent.server_params.kickoff_offside:
             target_point.set_x(min(-1.0e-5, target_point.x()))
 
-        adjusted_point = BhvStarterSetPlay.get_avoid_circle_point(wm, target_point,agent)
+        adjusted_point = self.get_avoid_circle_point(wm, target_point,agent)
         dist_thr = wm.ball.dist_from_self * 0.1
         if dist_thr < 0.7:
             dist_thr = 0.7

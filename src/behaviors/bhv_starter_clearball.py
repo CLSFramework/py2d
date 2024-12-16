@@ -12,7 +12,7 @@ class BhvStarterClearBall():
         pass
     
 
-    def execute(agent: IAgent):
+    def execute(self, agent: IAgent):
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
         target = Vector2D(agent.server_params.pitch_half_length, 0.0)

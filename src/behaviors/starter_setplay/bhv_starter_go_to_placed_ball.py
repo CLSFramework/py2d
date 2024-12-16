@@ -8,11 +8,12 @@ class BhvStarterGoToPlacedBall:
     
     def __init__(self, angle: float):
         self.M_ball_place_angle = angle  
-        pass
+        
 
     def execute(self, agent: IAgent):
         actions = []
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        setplay = BhvStarterSetPlay()
         
         dir_margin = 15.0
         sp = agent.server_params
@@ -31,7 +32,7 @@ class BhvStarterGoToPlacedBall:
         dash_power = 20.0
         dash_speed = -1.0
         if wm.ball.dist_from_self > 2.0:
-            dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)
+            dash_power = setplay.get_set_play_dash_power(agent)
         else:
             dash_speed = agent.player_types[wm.self.id].player_size
             dash_power = Tools.GetDashPowerToKeepSpeed(agent, dash_speed, wm.self.effort) #DEBUG NEEDED

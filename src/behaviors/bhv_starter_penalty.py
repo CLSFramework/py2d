@@ -92,7 +92,8 @@ class BhvStarterPenalty(IBehavior):
         goal_c = Vector2D(agent.server_params.pitch_half_length,0)
         opp_goalie = Tools.OpponentGoalie(agent)
         place_angle = 0.0
-        go_to_placed_ball = BhvStarterGoToPlacedBall(place_angle).execute(agent)
+        go_to_placed_ball = BhvStarterGoToPlacedBall(place_angle)
+        go_to_placed_ball = go_to_placed_ball.execute(agent)
         if go_to_placed_ball == []:
             actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(goal_c), cycle=2)))
         else:
@@ -324,7 +325,8 @@ class BhvStarterPenalty(IBehavior):
                 actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(drib_target), cycle=2)))
 
         else:
-            actions.append(BhvStarterDribble.execute(agent))
+            dribble = BhvStarterDribble()
+            actions.append(dribble.execute(agent))
 
         return actions
 
@@ -352,7 +354,8 @@ class BhvStarterPenalty(IBehavior):
             actions.append(PlayerAction(catch=Catch()))
 
         if wm.self.is_kickable:
-            actions.append(BhvStarterClearBall.execute(agent))
+            clear_ball = BhvStarterClearBall()
+            actions.append(clear_ball.execute(agent))
 
         if not SP.pen_allow_mult_kicks:
             if pow(Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.velocity).r(), 2) < 0.01 and abs(wm.ball.position.x) < SP.pitch_half_length - SP.pen_dist_x - 1.0:

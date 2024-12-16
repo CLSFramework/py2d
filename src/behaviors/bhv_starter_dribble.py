@@ -11,7 +11,7 @@ class BhvStarterDribble():
     def __init__(self):
         pass
 
-    def execute(agent: IAgent):
+    def execute(self, agent: IAgent):
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
         dribble_angle = (Vector2D(52.5, 0) - ball_pos).th().degree()
