@@ -6,7 +6,7 @@ from pyrusgeom.angle_deg import AngleDeg
 from src.interfaces.IAgent import IAgent
 import math
 from service_pb2 import PlayerType, Player, GameModeType, ServerParam, RpcVector2D
-from copy import copy
+from copy import deepcopy as copy
 
 class Tools:
     """Utility class containing helper methods for soccer simulation calculations"""
