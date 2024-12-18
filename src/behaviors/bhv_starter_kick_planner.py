@@ -1,5 +1,5 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IBehavior import IBehavior
-from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *
@@ -9,6 +9,10 @@ from src.behaviors.bhv_starter_dribble import BhvStarterDribble
 from src.behaviors.bhv_starter_shoot import BhvStarterShoot
 from src.utils.tools import Tools
 
+
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
+
 class BhvStarterKickPlanner(IBehavior):
     def __init__(self):
         self.starter_shoot = BhvStarterShoot()
@@ -16,7 +20,7 @@ class BhvStarterKickPlanner(IBehavior):
         self.starter_dribble = BhvStarterDribble()
         self.starter_pass = BhvStarterPass()
 
-    def execute(self, agent: IAgent):
+    def execute(self, agent: "SamplePlayerAgent"):
         agent.logger.debug("BhvStarterKickPlanner.execute")
         self.starter_shoot.execute(agent)
         opps = Tools.get_opponents_from_self(agent)
