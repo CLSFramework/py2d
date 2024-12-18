@@ -9,10 +9,12 @@ class BhvStarterPrepareSetPlayKick:
         self.M_wait_cycle = wait_cycle
 
     def execute(self, agent: IAgent) -> bool:
-        actions = []
         from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        go_to_placed_ball = BhvStarterGoToPlacedBall(self.M_ball_place_angle)
+        
+        actions = []
         # Not reach the ball side
-        actions += BhvStarterGoToPlacedBall(self.M_ball_place_angle).execute(agent)
+        actions += go_to_placed_ball.execute(agent)
 
         # Reach to ball side
         if self.s_rest_wait_cycle < 0:

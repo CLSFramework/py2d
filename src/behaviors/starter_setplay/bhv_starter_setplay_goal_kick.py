@@ -14,42 +14,44 @@ from src.utils.convertor import Convertor
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
 class BhvStarterSetPlayGoalKick:
-    def __init__():
+    def __init__(self):
         pass
     
-    def execute(agent:IAgent):
+    def execute(self, agent:IAgent):
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
-        if BhvStarterSetPlay.is_kicker(agent):
-            return BhvStarterSetPlayGoalKick.do_kick(agent)
+        setplay = BhvStarterSetPlay()
+        if setplay.is_kicker(agent):
+            return self.do_kick(agent)
         else:
-            return BhvStarterSetPlayGoalKick.do_move(agent)
+            return self.do_move(agent)
 
-    def do_kick(agent: IAgent):
+    def do_kick(self, agent: IAgent):
         from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
-        
+        go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
         actions = []
-        actions += BhvStarterSetPlayGoalKick.do_second_kick(agent)
+        actions += self.do_second_kick(agent)
         
-        actions += BhvStarterGoToPlacedBall(0.0).execute(agent)
+        actions += go_to_placed_ball.execute(agent)
 
-        wait = BhvStarterSetPlayGoalKick.do_kick_wait(agent)
+        wait = self.do_kick_wait(agent)
         if wait != []:
             actions += wait
             return actions
         
-        actions += BhvStarterSetPlayGoalKick.do_pass(agent)
+        actions += self.do_pass(agent)
         
-        actions += BhvStarterSetPlayGoalKick.do_kick_to_far_side(agent)
+        actions += self.do_kick_to_far_side(agent)
         
         wm = agent.wm
         real_set_play_count = wm.cycle - agent.wm.last_set_play_start_time
         if real_set_play_count <= agent.server_params.drop_ball_time - 10:
             actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
             return actions
-        actions.append(BhvStarterClearBall.execute(agent))
+        clear_ball = BhvStarterClearBall()
+        actions.append(clear_ball.execute(agent))
         return actions
 
-    def do_second_kick(agent:IAgent):
+    def do_second_kick(self, agent:IAgent):
         wm = agent.wm
         actions = []
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
@@ -58,28 +60,30 @@ class BhvStarterSetPlayGoalKick:
             return []
         
         if wm.self.is_kickable:
-            actions += BhvStarterSetPlayGoalKick.do_pass(agent)
-            actions += BhvStarterClearBall.execute(agent)
+            actions += self.do_pass(agent)
+            clear_ball = BhvStarterClearBall()
+            actions += [clear_ball.execute(agent)]
         
-        actions += BhvStarterSetPlayGoalKick.do_intercept(agent)
+        actions += self.do_intercept(agent)
         
         ball_final = Tools.BallInertiaFinalPoint(ball_position, ball_velocity, agent.server_params.ball_decay)
         
         actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(ball_final), distance_threshold=2.0, max_dash_power=agent.server_params.max_dash_power)))
         
-        actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(0, 0), cycle=2)))
+        actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
         
         return actions
 
-    def do_kick_wait(agent:IAgent):
+    def do_kick_wait(self, agent:IAgent):
+        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        setplay = BhvStarterSetPlay()
         wm = agent.wm
         actions = []
         real_set_play_count = wm.cycle - wm.last_set_play_start_time
 
         if real_set_play_count >= agent.server_params.drop_ball_time - 10:
             return []
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
-        if BhvStarterSetPlay.is_delaying_tactics_situation(agent):
+        if setplay.is_delaying_tactics_situation(agent):
             actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
             return actions
         
@@ -104,10 +108,11 @@ class BhvStarterSetPlayGoalKick:
             
         return []
 
-    def do_pass(agent:IAgent):
-        return [BhvStarterPass.execute(agent)]
+    def do_pass(self, agent:IAgent):
+        passer = BhvStarterPass()
+        return [passer.execute(agent)]
 
-    def do_intercept(agent:IAgent):
+    def do_intercept(self, agent:IAgent):
         wm = agent.wm
         actions = []
         
@@ -130,13 +135,14 @@ class BhvStarterSetPlayGoalKick:
         
         return actions
 
-    def do_move(agent:"SamplePlayerAgent"):
-        actions = []
-        actions += BhvStarterSetPlayGoalKick.do_intercept(agent)
+    def do_move(self, agent:"SamplePlayerAgent"):
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        setplay = BhvStarterSetPlay()
+        actions = []
+        actions += self.do_intercept(agent)
         wm = agent.wm
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
-        dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)
+        dash_power = setplay.get_set_play_dash_power(agent)
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
 
         target_rpc = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
@@ -174,7 +180,7 @@ class BhvStarterSetPlayGoalKick:
 
         return actions
 
-    def do_kick_to_far_side(agent:IAgent):
+    def do_kick_to_far_side(self, agent:IAgent):
         wm = agent.wm
         actions = []
         target_point = Vector2D(agent.server_params.our_penalty_area_line_x - 5.0, agent.server_params.penalty_area_half_width)

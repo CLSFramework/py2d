@@ -18,7 +18,7 @@ class BhvStarterTheirGoalKickMove:
     def __init__(self):
         pass
     
-    def execute(agent: IAgent) -> bool:
+    def execute(self, agent: IAgent) -> bool:
         expand_their_penalty = Rect2D(
             Vector2D(agent.server_params.their_penalty_area_line_x - 0.75,
                       -agent.server_params.penalty_area_half_width - 0.75),
@@ -28,7 +28,7 @@ class BhvStarterTheirGoalKickMove:
 
         wm = agent.wm
         actions = []
-        actions += BhvStarterTheirGoalKickMove.do_chase_ball(agent)
+        actions += self.do_chase_ball(agent)
 
         
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
@@ -38,11 +38,11 @@ class BhvStarterTheirGoalKickMove:
         intersection = intersection_list[0]
         if ball_velocity.r()  > 0.2:
             if not expand_their_penalty.contains(ball_position) or len(intersection_list)  != 1: #TODO Check
-                return BhvStarterTheirGoalKickMove.do_normal(agent)
+                return self.do_normal(agent)
         else:
             if (wm.ball.position.x > agent.server_params.their_penalty_area_line_x + 7.0 and
                 abs(wm.ball.position.y) < (agent.server_params.goal_width/2.0) + 2.0):
-                return BhvStarterTheirGoalKickMove.do_normal(agent)
+                return self.do_normal(agent)
 
             intersection.set_x(agent.server_params.their_penalty_area_line_x - 0.76)
             intersection.set_y(wm.ball.position.y)
@@ -52,7 +52,7 @@ class BhvStarterTheirGoalKickMove:
         nearest_tm_pos = Vector2D(nearest_tm.position.x, nearest_tm.position.y)
         min_dist = nearest_tm_pos.dist(intersection)
         if min_dist < self_position.dist(intersection):
-            return BhvStarterTheirGoalKickMove.do_normal(agent)
+            return self.do_normal(agent)
         dash_power = wm.self.get_safety_dash_power #TODO
 
         if intersection.x() < agent.server_params.their_penalty_area_line_x and wm.self.position.x > agent.server_params.their_penalty_area_line_x - 0.5:
@@ -67,16 +67,17 @@ class BhvStarterTheirGoalKickMove:
 
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
         
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(Convertor.convert_vector2d_to_rpc_vector2d(intersection), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(intersection), distance_threshold=dist_thr, max_dash_power=dash_power)))
         actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
         
         return actions
 
-    def do_normal(agent: "SamplePlayerAgent"):
+    def do_normal(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         actions = []
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
-        dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)
+        setplay = BhvStarterSetPlay()
+        dash_power = setplay.get_set_play_dash_power(agent)
         targ = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(targ.x, targ.y)
 
@@ -92,12 +93,12 @@ class BhvStarterTheirGoalKickMove:
                 target_point.set_y(target_point.y() * -1)
 
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(Convertor.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
         actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
         
         return actions
 
-    def do_chase_ball(agent: IAgent) -> bool:
+    def do_chase_ball(self, agent: IAgent) -> bool:
         wm = agent.wm
         actions = []
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)

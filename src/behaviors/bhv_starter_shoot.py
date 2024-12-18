@@ -9,7 +9,7 @@ class BhvStarterShoot():
     def __init__(self):
         pass
     
-    def execute(agent: IAgent):
+    def execute(self, agent: IAgent):
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
         ball_max_velocity = agent.server_params.ball_speed_max

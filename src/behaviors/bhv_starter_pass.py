@@ -11,7 +11,7 @@ class BhvStarterPass():
     def __init__(self):
         pass
 
-    def execute(agent: IAgent) -> PlayerAction:
+    def execute(self, agent: IAgent) -> PlayerAction:
         
         wm = agent.wm
         target = []
@@ -39,5 +39,5 @@ class BhvStarterPass():
             else :
                 return PlayerAction(body_smart_kick=Body_SmartKick(target_point=best_target.position, first_speed=2.5, first_speed_threshold=2.5, max_steps=1))
         
-        return 
+        return
                 

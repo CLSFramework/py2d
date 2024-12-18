@@ -20,19 +20,22 @@ class BhvStarterSetPlayFreeKick:
     def __init__(self):
         pass
     
-    def execute(agent: IAgent):
+    def execute(self, agent: IAgent):
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
-        if BhvStarterSetPlay.is_kicker(agent):
-            return BhvStarterSetPlayFreeKick.doKick(agent)
+        selfplay = BhvStarterSetPlay()
+        if selfplay.is_kicker(agent):
+            return self.doKick(agent)
         else:
-            return BhvStarterSetPlayFreeKick.do_move(agent)
+            return self.do_move(agent)
 
-    def doKick(agent:IAgent):
-        actions = []
+    def doKick(self, agent:IAgent):
         from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
+        actions = []
+        
         # go to the ball position
-        actions += BhvStarterGoToPlacedBall(0.0).execute(agent)
-        wait = BhvStarterSetPlayFreeKick.doKickWait(agent)
+        actions += go_to_placed_ball.execute(agent)
+        wait = self.doKickWait(agent)
         if wait != []:
             actions += wait
             return actions
@@ -41,7 +44,8 @@ class BhvStarterSetPlayFreeKick:
         max_ball_speed = wm.self.kick_rate * agent.server_params.max_power
 
         # pass
-        actions.append(BhvStarterPass.execute(agent))
+        passer = BhvStarterPass()
+        actions.append(passer.execute(agent))
 
         # kick to the nearest teammate
 
@@ -69,14 +73,15 @@ class BhvStarterSetPlayFreeKick:
         if abs(wm.ball.angle_from_self - wm.self.body_direction) > 1.5:
             actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
             return actions
-
-        actions.append(BhvStarterClearBall.execute(agent))
+        clear_ball = BhvStarterClearBall()
+        actions.append(clear_ball.execute(agent))
         return actions
 
 
-    def doKickWait(agent:IAgent):
-        wm = agent.wm
+    def doKickWait(self, agent:IAgent):
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        selfplay = BhvStarterSetPlay()
+        wm = agent.wm
         actions = []
         real_set_play_count = wm.cycle - wm.last_set_play_start_time
 
@@ -91,7 +96,7 @@ class BhvStarterSetPlayFreeKick:
             actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(face_point))))
             return actions
 
-        if BhvStarterSetPlay.is_delaying_tactics_situation(agent):
+        if selfplay.is_delaying_tactics_situation(agent):
             actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(face_point))))
             return actions
 
@@ -118,7 +123,7 @@ class BhvStarterSetPlayFreeKick:
 
         return []
 
-    def do_move(agent: "SamplePlayerAgent"):
+    def do_move(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         actions = []
         target_point_rpc = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
@@ -145,7 +150,8 @@ class BhvStarterSetPlayFreeKick:
 
         target_point.set_x(min(target_point.x(), wm.offside_line_x - 0.5))
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
-        dash_power = BhvStarterSetPlay.get_set_play_dash_power(agent)
+        selfplay = BhvStarterSetPlay()
+        dash_power = selfplay.get_set_play_dash_power(agent)
         dist_thr = wm.ball.dist_from_self * 0.07
         if dist_thr < 1.0:
             dist_thr = 1.0
