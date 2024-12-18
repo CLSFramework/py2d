@@ -22,14 +22,25 @@ class SamplePlayerAgent(IAgent, ABC):
         self.logger.info('SamplePlayerAgent created')
         
         # Flag to switch between starter mode and major mode
-        self.use_starter_code = False
+        self.use_starter_code = True
         
         # Initialize core components
         self.decision_maker = DecisionMaker(self)
-        self.strategy = FormationStrategy(self.logger) if not self.use_starter_code else StarterStrategy(self.logger)
+        self.strategy = self._initialize_strategy()
         self.wm: WorldModel = None
     
-    def update_actions(self, wm:WorldModel):
+    def _initialize_strategy(self):
+        """
+        Initialize the strategy based on the use_starter_code flag.
+        
+        Returns:
+            Strategy: Initialized strategy instance
+        """
+        if self.use_starter_code:
+            return StarterStrategy(self.logger)
+        return FormationStrategy(self.logger)
+    
+    def update_actions(self, wm: WorldModel):
         """
         Update agent actions based on the current world model state.
         

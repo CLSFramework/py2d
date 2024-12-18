@@ -85,10 +85,10 @@ class BhvStarterSetPlay(IBehavior):
     def get_set_play_dash_power(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         if not wm.is_our_set_play:
-            target_point = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
-            if target_point.x > wm.self.position.x:
+            target_point = agent.strategy.get_position(wm.self.uniform_number, agent)
+            if target_point.x() > wm.self.position.x:
                 if (wm.ball.position.x < -30.0 and
-                        target_point.x < wm.ball.position.x):
+                        target_point.x() < wm.ball.position.x):
                     return wm.self.get_safety_dash_power
                 rate = 0.0
                 if wm.self.stamina > agent.server_params.stamina_max * 0.8:
@@ -102,6 +102,7 @@ class BhvStarterSetPlay(IBehavior):
     def can_go_to(self, agent: IAgent, count, wm, ball_circle: Circle2D, target_point:Vector2D) -> bool:
         wm = agent.wm
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
+        
         move_line = Segment2D(self_position, target_point)
         n_intersection = ball_circle.intersection(move_line)
 
@@ -248,8 +249,7 @@ class BhvStarterSetPlay(IBehavior):
 
     def doBasicTheirSetPlayMove(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
-        target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
-        target_point = Vector2D(target.x, target.y)
+        target_point = agent.strategy.get_position(wm.self.uniform_number, agent)
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         dash_power = self.get_set_play_dash_power(agent)
         ball_to_target = Vector2D(target_point - ball_position)

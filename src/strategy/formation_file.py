@@ -19,6 +19,7 @@ class FormationFile:
         self.calculate()
 
     def read_file(self, path):
+        """Reads the formation file and initializes the formation data."""
         indexes, self._roles, self._formation_type = FormationFileReaderFactory().read_file(path)
         
         if self._formation_type == FormationType.Static:
@@ -32,6 +33,7 @@ class FormationFile:
                 self._players.append(index.players())
 
     def calculate(self):
+        """Calculates the Delaunay triangulation for dynamic formations."""
         if self._formation_type == FormationType.Static:
             return
         self._tri = Delaunay(self._balls).simplices
@@ -41,22 +43,23 @@ class FormationFile:
                                     Vector2D(self._balls[tri[2]][0], self._balls[tri[2]][1])), tri[0], tri[1], tri[2]]
             self._triangles.append(tmp)
 
-    def update(self, B:Vector2D):
-        # SP = ServerParam.i()
+    def update(self, B: Vector2D):
+        """Updates the target player positions based on the ball position B."""
         if self._formation_type == FormationType.Static:
             return
         ids = []
         
         point = B.copy()
-        if point.abs_x() > 52.5: #todo SP.pitch_half_length():
-            point._x = min_max(-52.5, point.x(), 52.5) #todo 
-        if point.abs_y() > 34.0: #SP.pitch_half_width():
-            point._y = min_max(-34.0, point.y(), +34.0) #todo
+        if point.abs_x() > 52.5:  # Ensure the point is within pitch boundaries
+            point._x = min_max(-52.5, point.x(), 52.5)
+        if point.abs_y() > 34.0:
+            point._y = min_max(-34.0, point.y(), 34.0)
         
         for tri in self._triangles:
             if tri[0].contains(point):
                 ids = [tri[1], tri[2], tri[3]]
                 break
+        
         Pa = Vector2D(self._balls[ids[0]][0], self._balls[ids[0]][1])
         Pb = Vector2D(self._balls[ids[1]][0], self._balls[ids[1]][1])
         Pc = Vector2D(self._balls[ids[2]][0], self._balls[ids[2]][1])
@@ -80,17 +83,21 @@ class FormationFile:
             self._target_players[p] = OB
 
     def get_pos(self, unum):
+        """Returns the position of the player with the given uniform number."""
         return self._target_players[unum]
 
     def get_poses(self):
+        """Returns the positions of all target players."""
         return self._target_players
     
     def get_role(self, unum) -> PlayerRole:
+        """Returns the role of the player with the given uniform number."""
         return self._roles[unum]
 
     def __repr__(self):
         return self._path
 
+# Example usage:
 # f = Formation('base/formations-dt/before-kick-off.conf')
 # debug_print(len(f._balls))
 # debug_print(len(f._players))
