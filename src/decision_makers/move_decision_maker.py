@@ -4,7 +4,7 @@ from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 from src.behaviors.bhv_block import Bhv_Block
 from src.behaviors.bhv_tackle import BhvTackle
 from src.behaviors.bhv_starter_tackle import BhvStarterTackle
@@ -79,15 +79,15 @@ class MoveDecisionMaker(IDecisionMaker):
         target_point = agent.strategy.get_position(wm.self.uniform_number, agent)
         dash_power = MoveDecisionMaker.get_normal_dash_power(agent)
         
-        ball_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)
-        self_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.self.position)
+        ball_pos = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.position)
+        self_pos = Tools.convert_rpc_vector2d_to_vector2d(wm.self.position)
         
         ball_dist_from_self = ball_pos.dist(self_pos)
         dist_thr = ball_dist_from_self * 0.1
         if dist_thr < 1.0:
             dist_thr = 1.0
             
-        agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point),
+        agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point),
                                                                       max_dash_power=dash_power, 
                                                                       distance_threshold=dist_thr)))
         agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall()))

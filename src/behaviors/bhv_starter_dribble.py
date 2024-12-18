@@ -19,7 +19,7 @@ class BhvStarterDribble():
         dribble_threshold = 0.7
         dribble_sector = Sector2D(ball_pos, 0, 3, dribble_angle - 15, dribble_angle + 15)
         
-        if not Tools.ExistOpponentIn(agent , dribble_sector):
+        if not Tools.exist_opponent_in(agent , dribble_sector):
             Target = Vector2D.polar2vector(3, dribble_angle) + ball_pos
             return PlayerAction(body_smart_kick=Body_SmartKick(target_point=RpcVector2D(x=Target.x(), y=Target.y()),
                                                                 first_speed=dribble_speed,

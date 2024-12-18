@@ -9,7 +9,7 @@ from src.behaviors.bhv_starter_kick_planner import BhvStarterKickPlanner
 from src.behaviors.bhv_starter_pass import BhvStarterPass
 from src.strategy.starter_strategy import StarterStrategy
 from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
@@ -66,9 +66,9 @@ class BhvStarterSetPlayGoalKick:
         
         actions += self.do_intercept(agent)
         
-        ball_final = Tools.BallInertiaFinalPoint(ball_position, ball_velocity, agent.server_params.ball_decay)
+        ball_final = Tools.calculate_ball_inertia_final_point(ball_position, ball_velocity, agent.server_params.ball_decay)
         
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(ball_final), distance_threshold=2.0, max_dash_power=agent.server_params.max_dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(ball_final), distance_threshold=2.0, max_dash_power=agent.server_params.max_dash_power)))
         
         actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
         
@@ -95,7 +95,7 @@ class BhvStarterSetPlayGoalKick:
             actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
             return actions
 
-        if wm.set_play_count <= 30 and len(Tools.TeammatesFromSelf(agent)) == 0:
+        if wm.set_play_count <= 30 and len(Tools.get_teammates_from_self(agent)) == 0:
             actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
             return actions
         
@@ -145,7 +145,7 @@ class BhvStarterSetPlayGoalKick:
         dash_power = setplay.get_set_play_dash_power(agent)
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
 
-        target_rpc = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
+        target_rpc = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target_rpc.x, target_rpc.y)
         target_point.set_y(target_point.y() + wm.ball.position.y * 0.5)
 
@@ -154,7 +154,7 @@ class BhvStarterSetPlayGoalKick:
 
         if wm.self.stamina > agent.server_params.stamina_max * 0.9:
             
-            nearest_opp = Tools.GetOpponentNearestToSelf(agent)
+            nearest_opp = Tools.get_opponent_nearest_to_self(agent)
             if nearest_opp and nearest_opp.dist_from_self < 3.0:
                 add_vec = ball_position - target_point
                 add_vec.set_length(3.0)
@@ -170,7 +170,7 @@ class BhvStarterSetPlayGoalKick:
                 target_point.set_x(min(max(-agent.server_params.pitch_half_length, target_point.x()), agent.server_params.pitch_half_length))
                 target_point.set_y(min(max(-agent.server_params.pitch_half_width, target_point.y()), agent.server_params.pitch_half_width))
 
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
         actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
         
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)

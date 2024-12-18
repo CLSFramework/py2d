@@ -10,7 +10,7 @@ import math
 from pyrusgeom.soccer_math import *
 #from src.setplay.BhvSetPlay import BhvSetPlay
 from src.strategy.starter_strategy import StarterStrategy
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
@@ -53,7 +53,7 @@ class BhvStarterSetPlayKickIn:
 
         # Kick to the nearest teammate
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
-        receiver: Player = Tools.GetTeammateNearestTo(agent, ball_position)
+        receiver: Player = Tools.get_teammate_nearest_to(agent, ball_position)
         if receiver and receiver.dist_from_ball < 10.0 and abs(receiver.position.x) < agent.server_params.pitch_half_length and abs(receiver.position.y) < agent.server_params.pitch_half_width:
 
             target_point = Vector2D(receiver.inertia_final_point.x, receiver.inertia_final_point.y)
@@ -69,7 +69,7 @@ class BhvStarterSetPlayKickIn:
                 ball_reach_step = math.ceil(calc_length_geom_series(ball_speed, ball_move_dist, agent.server_params.ball_decay))
 
             ball_speed = min(ball_speed, max_ball_speed)
-            actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
+            actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
             return actions
 
         # Clear
@@ -92,7 +92,7 @@ class BhvStarterSetPlayKickIn:
             target_point.set_y(target_point.y() * -1.0)
         
         # Enforce one step kick
-        actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), first_speed=agent.server_params.ball_speed_max, force_mode=False)))
+        actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=agent.server_params.ball_speed_max, force_mode=False)))
 
         return actions
     
@@ -110,7 +110,7 @@ class BhvStarterSetPlayKickIn:
             actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
             return actions
 
-        if not Tools.TeammatesFromBall(agent):
+        if not Tools.get_teammates_from_ball(agent):
             actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
             return actions
 
@@ -133,12 +133,12 @@ class BhvStarterSetPlayKickIn:
         wm = agent.wm
         actions = []
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
-        target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
+        target = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
         avoid_opponent = False
         
         if wm.self.stamina > agent.server_params.stamina_max * 0.9:
-            nearest_opp = Tools.GetOpponentNearestToSelf(agent)
+            nearest_opp = Tools.get_opponent_nearest_to_self(agent)
             nearest_opp_pos = Vector2D(nearest_opp.position.x, nearest_opp.position.y)
             
             if nearest_opp and nearest_opp_pos.dist(target_point) < 3.0:
@@ -159,13 +159,13 @@ class BhvStarterSetPlayKickIn:
         dash_power = setplay.get_set_play_dash_power(agent)
         dist_thr = wm.ball.dist_from_self * 0.07
         dist_thr = max(dist_thr, 1.0)
-        tm = Tools.TeammatesFromBall(agent)
+        tm = Tools.get_teammates_from_ball(agent)
         if tm:
             kicker_ball_dist = tm[0].dist_from_ball
         else:
             1000
         
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
             # Already there
         if kicker_ball_dist > 1.0:
             actions.append(PlayerAction(turn=Turn(relative_direction=120)))

@@ -7,7 +7,7 @@ from pyrusgeom.vector_2d import Vector2D
 from pyrusgeom.segment_2d import Segment2D
 from pyrusgeom.circle_2d import Circle2D
 from pyrusgeom.angle_deg import AngleDeg
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 from src.strategy.starter_strategy import StarterStrategy
 from src.utils.tools import Tools
 from src.behaviors.starter_setplay.bhv_starter_setplay_kickoff import BhvStarterSetPlayKickOff
@@ -169,7 +169,7 @@ class BhvStarterSetPlay(IBehavior):
             elif i == wm.our_goalie_uniform_number:
                 continue
             else:
-                h_p:RpcVector2D = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(i, agent))
+                h_p:RpcVector2D = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(i, agent))
             home_pos = Vector2D(h_p.x, h_p.y)
             if(home_pos.dist(ball_position) < min_dist):
                 min_dist = home_pos.dist(ball_position)
@@ -272,7 +272,7 @@ class BhvStarterSetPlay(IBehavior):
         if adjusted_point != target_point and ball_position.dist(target_point) > 10.0 and Tools.inertia_final_point(agent.player_types[wm.self.id], self_position, self_velocity).dist(adjusted_point) < dist_thr:
             adjusted_point = target_point
         actions = []
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(adjusted_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(adjusted_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
         body_angle = wm.ball.angle_from_self
         if body_angle < 0.0:
             body_angle -= 90.0

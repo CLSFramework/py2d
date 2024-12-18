@@ -21,7 +21,7 @@ class BhvStarterKickPlanner(IBehavior):
         from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
         actions = []
         actions += [shoot] if (shoot := self.starter_shoot.execute(agent)) is not None else []
-        opps = Tools.OpponentsFromSelf(agent)
+        opps = Tools.get_opponents_from_self(agent)
         nearest_opp = opps[0] if opps else None
         nearest_opp_dist = nearest_opp.dist_from_self if nearest_opp else 1000.0
         

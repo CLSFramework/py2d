@@ -26,7 +26,7 @@ class BhvStarterPass():
             if self_pos.dist(tm_pos) < 2.0:
                 continue
             check_root = Sector2D(ball_pos, 1.0, tm_pos.dist(ball_pos) + 3.0, (tm_pos - ball_pos).th().degree() - 15.0, (tm_pos - ball_pos).th().degree() + 15.0)
-            if not Tools.ExistOpponentIn(agent, check_root):
+            if not Tools.exist_opponent_in(agent, check_root):
                 target.append(i)
                 
         if not target == []:

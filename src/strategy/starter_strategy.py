@@ -5,7 +5,7 @@ from src.strategy.player_role import PlayerRole, RoleName, RoleType, RoleSide
 from pyrusgeom.soccer_math import *
 from service_pb2 import *
 import logging
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 
 
 class StarterStrategy(IPositionStrategy):
@@ -76,8 +76,8 @@ class StarterStrategy(IPositionStrategy):
             ball_step = min(ball_step, wm.intercept_table.first_opponent_reach_steps)
             ball_step = min(ball_step, wm.intercept_table.self_reach_steps)
 
-        real_ball_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)
-        real_ball_vel = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.velocity)
+        real_ball_pos = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.position)
+        real_ball_vel = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.velocity)
         return inertia_n_step_point(real_ball_pos, real_ball_vel, ball_step, agent.server_params.ball_decay)
 
     def _set_dynamic_positions(self, ball_pos: Vector2D, agent: IAgent):

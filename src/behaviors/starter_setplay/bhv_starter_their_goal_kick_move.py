@@ -10,7 +10,7 @@ from pyrusgeom.ray_2d import Ray2D
 from pyrusgeom.size_2d import Size2D
 from pyrusgeom.rect_2d import Rect2D
 from pyrusgeom.angle_deg import AngleDeg
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
@@ -48,7 +48,7 @@ class BhvStarterTheirGoalKickMove:
             intersection.set_y(wm.ball.position.y)
 
         min_dist = 100.0
-        nearest_tm = Tools.GetTeammateNearestTo(agent, intersection)
+        nearest_tm = Tools.get_teammate_nearest_to(agent, intersection)
         nearest_tm_pos = Vector2D(nearest_tm.position.x, nearest_tm.position.y)
         min_dist = nearest_tm_pos.dist(intersection)
         if min_dist < self_position.dist(intersection):
@@ -67,7 +67,7 @@ class BhvStarterTheirGoalKickMove:
 
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
         
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(intersection), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(intersection), distance_threshold=dist_thr, max_dash_power=dash_power)))
         actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
         
         return actions
@@ -78,7 +78,7 @@ class BhvStarterTheirGoalKickMove:
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         dash_power = setplay.get_set_play_dash_power(agent)
-        targ = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
+        targ = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(targ.x, targ.y)
 
         # Attract to ball
@@ -93,7 +93,7 @@ class BhvStarterTheirGoalKickMove:
                 target_point.set_y(target_point.y() * -1)
 
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
         actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
         
         return actions

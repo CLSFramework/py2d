@@ -15,7 +15,7 @@ import pyrusgeom.soccer_math as smath
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 import math
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
@@ -66,7 +66,7 @@ class BhvStarterSetPlayIndirectFreeKick:
             actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=50, y=0), cycle=2)))
 
         # no teammate
-        if not Tools.TeammatesFromBall(agent) or Tools.TeammatesFromBall(agent)[0].dist_from_self > 35.0 or Tools.TeammatesFromBall(agent)[0].position.x < -30.0:
+        if not Tools.get_teammates_from_ball(agent) or Tools.get_teammates_from_ball(agent)[0].dist_from_self > 35.0 or Tools.get_teammates_from_ball(agent)[0].position.x < -30.0:
             real_set_play_count = int(wm.cycle - wm.last_set_play_start_time)
             if real_set_play_count <= agent.server_params.drop_ball_time - 3:
                 actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=50, y=0), cycle=2)))
@@ -75,7 +75,7 @@ class BhvStarterSetPlayIndirectFreeKick:
             target_point = Vector2D(agent.server_params.pitch_half_length,
                                    (-1 + 2 * wm.cycle % 2) * (agent.server_params.goal_width / 2 - 0.8))
             ball_speed = max_kick_speed
-            actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
+            actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
             
             return actions
 
@@ -86,7 +86,7 @@ class BhvStarterSetPlayIndirectFreeKick:
         min_dist = 100000.0
         receiver = None
 
-        for t in Tools.TeammatesFromBall(agent):
+        for t in Tools.get_teammates_from_ball(agent):
             if t.dist_from_ball < 1.5:
                 continue
             if t.dist_from_ball > 20.0:
@@ -102,8 +102,8 @@ class BhvStarterSetPlayIndirectFreeKick:
         target_point = goal
         target_dist = 10.0
         if not receiver:
-            target_dist = Tools.TeammatesFromSelf(agent)[0].dist_from_self
-            target_point = Tools.TeammatesFromSelf(agent)[0].position
+            target_dist = Tools.get_teammates_from_self(agent)[0].dist_from_self
+            target_point = Tools.get_teammates_from_self(agent)[0].position
         else:
             target_dist = receiver.dist_from_self
             target_point = receiver.position
@@ -124,13 +124,13 @@ class BhvStarterSetPlayIndirectFreeKick:
         face_angle = (face_point - self_position).th()
 
         if wm.time_stopped > 0:
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
+            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
 
         if abs(face_angle.degree() - wm.self.body_direction) > 5.0:
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
+            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
 
-        if wm.set_play_count <= 10 and not Tools.TeammatesFromSelf(agent):
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
+        if wm.set_play_count <= 10 and not Tools.get_teammates_from_self(agent):
+            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
 
         return actions
 
@@ -143,7 +143,7 @@ class BhvStarterSetPlayIndirectFreeKick:
         min_dist = 100000.0
         receiver = None
 
-        for t in Tools.TeammatesFromBall(agent):
+        for t in Tools.get_teammates_from_ball(agent):
             if t.dist_from_ball < 1.5:
                 continue
             if t.dist_from_ball > 20.0:
@@ -181,7 +181,7 @@ class BhvStarterSetPlayIndirectFreeKick:
 
         ball_speed = min(ball_speed, max_ball_speed)
 
-        actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
+        actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
         return actions
 
     def get_avoid_circle_point(self, agent: IAgent, point: Vector2D):
@@ -212,13 +212,13 @@ class BhvStarterSetPlayIndirectFreeKick:
     def do_offense_move(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         actions = []
-        target_point = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
+        target_point = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point.x = min(wm.offside_line_x - 1.0, target_point.x)
         target_point_vector2d = Vector2D(target_point.x, target_point.y)
 
         nearest_dist = 1000.0
         
-        teammate = Tools.GetTeammateNearestTo(agent, Vector2D(target_point.x, target_point.y))
+        teammate = Tools.get_teammate_nearest_to(agent, Vector2D(target_point.x, target_point.y))
         teammate_pos = Vector2D(teammate.position.x, teammate.position.y)
         if nearest_dist < 2.5:
             target_point_vector2d += (target_point_vector2d - teammate_pos).set_length_vector(2.5)
@@ -232,12 +232,12 @@ class BhvStarterSetPlayIndirectFreeKick:
         if dist_thr < 0.5:
             dist_thr = 0.5
         
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(target_point_vector2d), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point_vector2d), distance_threshold=dist_thr, max_dash_power=dash_power)))
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         turn_point = (Vector2D(agent.server_params.pitch_half_length, 0) + ball_position) * 0.5
-        actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(turn_point), cycle=2)))
+        actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(turn_point), cycle=2)))
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
-        if target_point.x > 36.0 and (self_position.dist(Convertor.convert_rpc_vector2d_to_vector2d(target_point)) > max(ball_position.dist(Convertor.convert_rpc_vector2d_to_vector2d(target_point)) * 0.2, dist_thr) + 6.0 or wm.self.stamina < agent.server_params.stamina_max * 0.7):
+        if target_point.x > 36.0 and (self_position.dist(Tools.convert_rpc_vector2d_to_vector2d(target_point)) > max(ball_position.dist(Tools.convert_rpc_vector2d_to_vector2d(target_point)) * 0.2, dist_thr) + 6.0 or wm.self.stamina < agent.server_params.stamina_max * 0.7):
             if not wm.self.stamina_capacity == 0:
                 #TODO actions.append(Say(wait_request_message=WaitRequestMessage()))
                 pass
@@ -252,7 +252,7 @@ class BhvStarterSetPlayIndirectFreeKick:
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
         self_velocity = Vector2D(wm.self.velocity.x, wm.self.velocity.y)
-        target = Convertor.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
+        target = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
         adjusted_point = self.get_avoid_circle_point(agent, target_point)
 
@@ -289,7 +289,7 @@ class BhvStarterSetPlayIndirectFreeKick:
                     adjusted_point += Vector2D.from_polar(collision_dist + 0.1, post_angle + 90.0)
 
                 dist_thr = 0.05
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(adjusted_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(adjusted_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
         actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
 
         return actions

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IAgent import IAgent
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 from pyrusgeom.geom_2d import *
 from pyrusgeom.soccer_math import *
 from service_pb2 import *
@@ -30,9 +30,9 @@ class BhvStarterTackle(IBehavior):
         mate_min = wm.intercept_table.first_teammate_reach_steps
         opp_min = wm.intercept_table.first_opponent_reach_steps
         
-        self_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.self.position)
-        ball_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)
-        ball_velocity = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.velocity)
+        self_pos = Tools.convert_rpc_vector2d_to_vector2d(wm.self.position)
+        ball_pos = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.position)
+        ball_velocity = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.velocity)
         
         self_reach_point = inertia_n_step_point(ball_pos, ball_velocity, self_min, agent.server_params.ball_decay)
         

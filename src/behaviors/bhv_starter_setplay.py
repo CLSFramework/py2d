@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IAgent import IAgent
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 from pyrusgeom.geom_2d import *
 from pyrusgeom.soccer_math import *
 from service_pb2 import *

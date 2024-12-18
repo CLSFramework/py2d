@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IAgent import IAgent
-from src.utils.convertor import Convertor
+from src.utils.tools import Tools
 from pyrusgeom.geom_2d import *
 from pyrusgeom.soccer_math import *
 from service_pb2 import *
@@ -45,8 +45,8 @@ class Bhv_Block(IBehavior):
         sp = agent.server_params
         
         opp_min = wm.intercept_table.first_opponent_reach_steps
-        current_ball_pos = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.position)
-        current_ball_vel = Convertor.convert_rpc_vector2d_to_vector2d(wm.ball.velocity)
+        current_ball_pos = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.position)
+        current_ball_vel = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.velocity)
         intercept_pos: Vector2D = inertia_n_step_point(current_ball_pos, current_ball_vel, opp_min, sp.ball_decay)
         target_pos = self._get_final_target(agent)
         dribble_vel = Vector2D.from_polar(self._get_average_dribble_speed(agent), (target_pos - intercept_pos).th())
@@ -77,7 +77,7 @@ class Bhv_Block(IBehavior):
                 if block_cycles <= cycle:
                     if wm.self.uniform_number == our_player.uniform_number:
                         agent.logger.debug(f'Bhv_Block: True: I can block in {cycle} in {future_ball_pos=}')
-                        agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Convertor.convert_vector2d_to_rpc_vector2d(future_ball_pos),
+                        agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(future_ball_pos),
                                                                                       max_dash_power=100.0,
                                                                                       distance_threshold=0.5)))
                         agent.add_action(PlayerAction(neck_turn_to_ball_or_scan=Neck_TurnToBallOrScan(count_threshold=0)))
@@ -118,6 +118,6 @@ class Bhv_Block(IBehavior):
         Returns:
             int: The number of cycles required for the player to block the ball.
         """
-        player_pos = Convertor.convert_rpc_vector2d_to_vector2d(player.position)
+        player_pos = Tools.convert_rpc_vector2d_to_vector2d(player.position)
         distance = future_ball_pos.dist(player_pos)
         return int(distance)
