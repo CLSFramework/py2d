@@ -1,18 +1,20 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IBehavior import IBehavior
-from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from src.utils.tools import Tools
-from pyrusgeom import vector_2d
 from service_pb2 import *
 
-class BhvStarterClearBall():
+
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
+    
+class BhvStarterClearBall(IBehavior):
 
     def __init__(self):
         pass
-    
 
-    def execute(self, agent: IAgent):
+    def execute(self, agent: "SamplePlayerAgent") -> bool:
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
         target = Vector2D(agent.server_params.pitch_half_length, 0.0)
@@ -32,8 +34,10 @@ class BhvStarterClearBall():
                     target = Vector2D(ball_pos.x(), 34.0)
                 else : 
                     target = Vector2D(ball_pos.x(), -34.0)
-        return PlayerAction(body_smart_kick=Body_SmartKick(target_point=RpcVector2D(x=target.x(), y=target.y()),
-                                                                        first_speed=2.7,
-                                                                            first_speed_threshold=2.7,
-                                                                                max_steps=2))
+        agent.add_action(PlayerAction(body_smart_kick=Body_SmartKick(target_point=Tools.convert_vector2d_to_rpc_vector2d(target),
+                                                                     first_speed=2.7,
+                                                                     first_speed_threshold=2.7,
+                                                                     max_steps=2)))
+        return True
+                         
         

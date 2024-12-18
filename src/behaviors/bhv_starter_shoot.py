@@ -1,15 +1,19 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IBehavior import IBehavior
 from src.interfaces.IAgent import IAgent
 from pyrusgeom.vector_2d import Vector2D
 from service_pb2 import *
 
 
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
 
-class BhvStarterShoot():
+
+class BhvStarterShoot(IBehavior):
     def __init__(self):
         pass
     
-    def execute(self, agent: IAgent):
+    def execute(self, agent: "SamplePlayerAgent") -> bool:
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
         ball_max_velocity = agent.server_params.ball_speed_max
@@ -22,17 +26,18 @@ class BhvStarterShoot():
 
             if left_goal.dist(ball_pos) < right_goal.dist(ball_pos):
                 agent.add_log_message(LoggerLevel.SHOOT, f": Shooting to {left_goal}", agent.wm.self.position.x, agent.wm.self.position.y - 2, '\033[31m')
-                return PlayerAction(body_smart_kick=Body_SmartKick(target_point=RpcVector2D(x=left_goal.x(), y=left_goal.y()),
-                                                                                first_speed=ball_max_velocity ,
-                                                                                    first_speed_threshold=0.1 ,
-                                                                                        max_steps=2))
-            else :
+                agent.add_action(PlayerAction(body_smart_kick=Body_SmartKick(target_point=RpcVector2D(x=left_goal.x(), y=left_goal.y()),
+                                                                             first_speed=ball_max_velocity,
+                                                                             first_speed_threshold=0.1,
+                                                                             max_steps=3)))
+            else:
                 agent.add_log_message(LoggerLevel.SHOOT, f": Shooting to {right_goal}", agent.wm.self.position.x, agent.wm.self.position.y - 2, '\033[31m')
-                return PlayerAction(body_smart_kick=Body_SmartKick(target_point=RpcVector2D(x=right_goal.x(), y=right_goal.y()),
-                                                                                first_speed=ball_max_velocity ,
-                                                                                    first_speed_threshold=0.1 ,
-                                                                                        max_steps=2))
-        return
+                agent.add_action(PlayerAction(body_smart_kick=Body_SmartKick(target_point=RpcVector2D(x=right_goal.x(), y=right_goal.y()),
+                                                                             first_speed=ball_max_velocity,
+                                                                             first_speed_threshold=0.1,
+                                                                             max_steps=3)))
+            return True
+        return False
 
 
         

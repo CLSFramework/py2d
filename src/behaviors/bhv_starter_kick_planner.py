@@ -18,24 +18,17 @@ class BhvStarterKickPlanner(IBehavior):
 
     def execute(self, agent: IAgent):
         agent.logger.debug("BhvStarterKickPlanner.execute")
-        from src.sample_player_agent import SamplePlayerAgent  # Local import to avoid circular import
-        actions = []
-        actions += [shoot] if (shoot := self.starter_shoot.execute(agent)) is not None else []
+        self.starter_shoot.execute(agent)
         opps = Tools.get_opponents_from_self(agent)
         nearest_opp = opps[0] if opps else None
         nearest_opp_dist = nearest_opp.dist_from_self if nearest_opp else 1000.0
         
         if nearest_opp_dist < 10:
-            actions += [passing] if (passing := self.starter_pass.execute(agent)) is not None else []
+            self.starter_pass.execute(agent)
             
-        actions += [dribble] if (dribble := self.starter_dribble.execute(agent)) is not None else []
+        self.starter_dribble.execute(agent)
         
         if nearest_opp_dist > 2.5:
-            actions.append(PlayerAction(body_hold_ball=Body_HoldBall()))
+            agent.add_action(PlayerAction(body_hold_ball=Body_HoldBall()))
 
-        actions.append(self.starter_clear_ball.execute(agent))
-        
-        #Sending actions' queue
-        for i in actions:
-            if not i == []:
-                agent.add_action(i)
+        self.starter_clear_ball.execute(agent)
