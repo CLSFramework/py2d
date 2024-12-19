@@ -18,7 +18,7 @@ class BhvStarterTheirGoalKickMove:
     def __init__(self):
         pass
     
-    def execute(self, agent: IAgent) -> bool:
+    def execute(self, agent: "SamplePlayerAgent"):
         expand_their_penalty = Rect2D(
             Vector2D(agent.server_params.their_penalty_area_line_x - 0.75,
                       -agent.server_params.penalty_area_half_width - 0.75),
@@ -27,9 +27,7 @@ class BhvStarterTheirGoalKickMove:
         )
 
         wm = agent.wm
-        actions = []
-        actions += self.do_chase_ball(agent)
-
+        self.do_chase_ball(agent)
         
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
@@ -67,14 +65,13 @@ class BhvStarterTheirGoalKickMove:
 
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
         
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(intersection), distance_threshold=dist_thr, max_dash_power=dash_power)))
-        actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
+        agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(intersection), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
         
-        return actions
+        return True
 
     def do_normal(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
-        actions = []
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         dash_power = setplay.get_set_play_dash_power(agent)
@@ -93,24 +90,23 @@ class BhvStarterTheirGoalKickMove:
                 target_point.set_y(target_point.y() * -1)
 
         dist_thr = max(wm.ball.dist_from_self * 0.07, 1.0)
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
-        actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
+        agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=0)))
         
-        return actions
+        return True
 
-    def do_chase_ball(self, agent: IAgent) -> bool:
+    def do_chase_ball(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
-        actions = []
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         ball_velocity = Vector2D(wm.ball.velocity.x, wm.ball.velocity.y)
 
         if ball_velocity.r() < 0.2:
-            return []
+            return False
 
         self_min = wm.intercept_table.self_reach_steps
 
         if self_min > 10:
-            return []
+            return False
 
         get_pos = Tools.inertia_point(ball_position, ball_velocity,self_min, agent.server_params.ball_decay)
 
@@ -122,13 +118,13 @@ class BhvStarterTheirGoalKickMove:
                    (agent.server_params.penalty_area_half_width * 2) - 2.0)
         )
         if their_penalty.contains(get_pos):
-            return []
+            return False
 
         if (get_pos.x() > pen_x and wm.self.position.x < pen_x and abs(wm.self.position.y) < pen_y - 0.5):
-            return []
+            return False
 
 
         # Can chase!!
         
-        actions.append(PlayerAction(body_intercept=Body_Intercept()))
-        return actions
+        agent.add_action(PlayerAction(body_intercept=Body_Intercept()))
+        return True

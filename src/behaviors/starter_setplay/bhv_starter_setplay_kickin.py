@@ -12,13 +12,15 @@ from pyrusgeom.soccer_math import *
 from src.strategy.starter_strategy import StarterStrategy
 from src.utils.tools import Tools
 
+
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
+    
 class BhvStarterSetPlayKickIn:
 
     def __init__(self):
         pass
-    def execute(self, agent: IAgent) -> bool:
+    def execute(self, agent: "SamplePlayerAgent"):
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
 
@@ -27,29 +29,24 @@ class BhvStarterSetPlayKickIn:
         else:
             return self.do_move(agent)
 
-        return []
-
-    def do_kick(self, agent: IAgent):
+    def do_kick(self, agent: "SamplePlayerAgent"):
         from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
         wm = agent.wm
-        actions = []
         # Go to the kick position
         ball_place_angle = -90.0 if wm.ball.position.y > 0.0 else 90.0
         go_to_placed_ball = BhvStarterGoToPlacedBall(ball_place_angle)
-        actions += go_to_placed_ball.execute(agent)
+        go_to_placed_ball.execute(agent)
 
         # Wait
-        wait = self.do_kick_wait(agent)
-        if wait != []:
-            actions += wait
-            return actions
+        if self.do_kick_wait(agent):
+            return True
 
         # Kick
         max_ball_speed = wm.self.kick_rate * agent.server_params.max_power
 
         # Pass
         passer = BhvStarterPass()
-        actions.append(passer.execute(agent))
+        passer.execute(agent)
 
         # Kick to the nearest teammate
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
@@ -69,19 +66,19 @@ class BhvStarterSetPlayKickIn:
                 ball_reach_step = math.ceil(calc_length_geom_series(ball_speed, ball_move_dist, agent.server_params.ball_decay))
 
             ball_speed = min(ball_speed, max_ball_speed)
-            actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
-            return actions
+            agent.add_action(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
+            return True
 
         # Clear
         # Turn to ball
         if abs(wm.ball.angle_from_self - wm.self.body_direction) > 1.5:
-            actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return actions
+            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
+            return True
 
         # Advance ball
         if wm.self.position.x < 20.0:
-            actions.append(PlayerAction(body_advance_ball=Body_AdvanceBall()))
-            return actions
+            agent.add_action(PlayerAction(body_advance_ball=Body_AdvanceBall()))
+            return True
 
         # Kick to the opponent side corner
 
@@ -92,46 +89,44 @@ class BhvStarterSetPlayKickIn:
             target_point.set_y(target_point.y() * -1.0)
         
         # Enforce one step kick
-        actions.append(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=agent.server_params.ball_speed_max, force_mode=False)))
+        agent.add_action(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=agent.server_params.ball_speed_max, force_mode=False)))
 
-        return actions
+        return True
     
 
-    def do_kick_wait(self, agent: IAgent):
+    def do_kick_wait(self, agent: "SamplePlayerAgent"):
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         wm = agent.wm
 
         real_set_play_count = wm.cycle - wm.last_set_play_start_time
-        actions = []
         if real_set_play_count >= agent.server_params.drop_ball_time - 5:
-            return []
+            return False
         if setplay.is_delaying_tactics_situation(agent):
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
-            return actions
+            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
+            return True
 
         if not Tools.get_teammates_from_ball(agent):
-            actions.append(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
-            return actions
+            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
+            return True
 
         if wm.set_play_count <= 3:
-            actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return actions
+            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
+            return True
 
         if wm.set_play_count >= 15 and wm.see_time == wm.cycle and wm.self.stamina > agent.server_params.stamina_max * 0.6:
-            return []
+            return False
 
         if wm.see_time != wm.cycle or wm.self.stamina < agent.server_params.stamina_max * 0.9:
-            actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return actions
+            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
+            return True
 
-        return actions
+        return False
 
     def do_move(self, agent: "SamplePlayerAgent"):
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         wm = agent.wm
-        actions = []
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         target = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
         target_point = Vector2D(target.x, target.y)
@@ -165,12 +160,12 @@ class BhvStarterSetPlayKickIn:
         else:
             1000
         
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
             # Already there
         if kicker_ball_dist > 1.0:
-            actions.append(PlayerAction(turn=Turn(relative_direction=120)))
+            agent.add_action(PlayerAction(turn=Turn(relative_direction=120)))
         else:
-            actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
+            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
         self_velocity = Vector2D(wm.self.velocity.x, wm.self.velocity.y)
         my_inertia = Tools.inertia_final_point(agent.player_types[wm.self.id], self_position, self_velocity)
@@ -189,4 +184,4 @@ class BhvStarterSetPlayKickIn:
         else:
             agent.setNeckAction(NeckTurnToBall())''' #TODO
             
-        return actions
+        return True

@@ -1,17 +1,21 @@
+from typing import TYPE_CHECKING
 from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
 #from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay #TODO
 from src.utils.tools import Tools
-from src.utils.tools import Tools
+
+if TYPE_CHECKING:
+    from src.sample_player_agent import SamplePlayerAgent
+    
+    
 class BhvStarterGoToPlacedBall:
     
     def __init__(self, angle: float):
         self.M_ball_place_angle = angle  
         
 
-    def execute(self, agent: IAgent):
-        actions = []
+    def execute(self, agent: "SamplePlayerAgent") -> bool:
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         
@@ -22,7 +26,7 @@ class BhvStarterGoToPlacedBall:
 
         if abs(angle_diff) < dir_margin and wm.ball.dist_from_self < (agent.player_types[wm.self.id].player_size + sp.ball_size + 0.08):
             # already reach
-            return actions
+            return False
 
         # decide sub-target point
         ball_position = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.position)
@@ -38,14 +42,14 @@ class BhvStarterGoToPlacedBall:
             dash_power = Tools.get_dash_power_to_keep_speed(agent, dash_speed, wm.self.effort) #DEBUG NEEDED
         # it is necessary to go to sub target point
         if abs(angle_diff) > dir_margin:
-            actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(sub_target), distance_threshold=0.1, max_dash_power=50)))
+            agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(sub_target), distance_threshold=0.1, max_dash_power=50)))
         # dir diff is small. go to ball
         else:
             # body dir is not right
             if abs(wm.ball.angle_from_self - wm.self.body_direction) > 1.5:
-                actions.append(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
+                agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
             # dash to ball
             else:
-                actions.append(PlayerAction(dash=Dash(power=dash_power, relative_direction=0)))
+                agent.add_action(PlayerAction(dash=Dash(power=dash_power, relative_direction=0)))
                 
-        return actions
+        return True

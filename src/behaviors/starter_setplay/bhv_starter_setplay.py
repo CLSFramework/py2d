@@ -22,65 +22,60 @@ if TYPE_CHECKING:
     
 class BhvStarterSetPlay(IBehavior):
     def __init__(self):
-        pass
+        self.setplay_kickoff = BhvStarterSetPlayKickOff()
+        self.their_goal_kick_move = BhvStarterTheirGoalKickMove()
+        self.setplay_freekick = BhvStarterSetPlayFreeKick()
+        self.setplay_goal_kick = BhvStarterSetPlayGoalKick()
+        self.setplay_kickin = BhvStarterSetPlayKickIn()
+        self.setplay_indirect_freekick = BhvStarterSetPlayIndirectFreeKick()
 
-    def execute(self, agent: IAgent):
-        actions = self.decision(agent)
-        for i in actions:
-            if not i == None:
-               agent.add_action(i) 
+    def execute(self, agent: "SamplePlayerAgent"):
+        agent.logger.debug("BhvStarterSetPlay.execute")
+        return self.decision(agent)
                
-    def decision(self, agent: IAgent):
-        setplay_kickoff = BhvStarterSetPlayKickOff()
-        their_goal_kick_move = BhvStarterTheirGoalKickMove()
-        setplay_freekick = BhvStarterSetPlayFreeKick()
-        setplay_goal_kick = BhvStarterSetPlayGoalKick()
-        setplay_kickin = BhvStarterSetPlayKickIn()
-        setplay_indirect_freekick = BhvStarterSetPlayIndirectFreeKick()
+    def decision(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         if wm.self.is_goalie:
             if wm.game_mode_type != GameModeType.BackPass_ and wm.game_mode_type != GameModeType.IndFreeKick_:
-                return [PlayerAction(bhv_goalie_free_kick=bhv_goalieFreeKick())] #TODO
-                #return BhvSetPlayGoalKick.execute(agent) #TODO GoalieFreeKick
+                agent.add_action(PlayerAction(bhv_goalie_free_kick=bhv_goalieFreeKick())) #TODO
+                return True
             else:
-                return setplay_indirect_freekick.execute(agent)
-            return []
+                self.setplay_indirect_freekick.execute(agent)
+                return True
 
         if wm.game_mode_type == GameModeType.KickOff_:
             if wm.game_mode_side == wm.our_side:
-                return setplay_kickoff.execute(agent)
+                return self.setplay_kickoff.execute(agent)
             else:
                 return self.doBasicTheirSetPlayMove(agent)
 
 
         if wm.game_mode_type in [GameModeType.KickIn_, GameModeType.CornerKick_]:
             if wm.game_mode_side == wm.our_side:
-                return setplay_kickin.execute(agent)
+                return self.setplay_kickin.execute(agent)
             else:
                 return self.doBasicTheirSetPlayMove(agent)
 
         if wm.game_mode_type == GameModeType.GoalKick_:
             if wm.game_mode_side == wm.our_side:
-                return setplay_goal_kick.execute(agent)
+                return self.setplay_goal_kick.execute(agent)
             else:
-                return their_goal_kick_move.execute(agent)
+                return self.their_goal_kick_move.execute(agent)
 
         if wm.game_mode_type in [GameModeType.BackPass_, GameModeType.IndFreeKick_]:
-            return setplay_indirect_freekick.execute(agent)
+            return self.setplay_indirect_freekick.execute(agent)
 
         if wm.game_mode_type in [GameModeType.FoulCharge_, GameModeType.FoulPush_]:
             if (wm.ball.position.x < agent.server_params.our_penalty_area_line_x + 1.0 and abs(wm.ball.position.y) < agent.server_params.penalty_area_half_width + 1.0):
-                return setplay_indirect_freekick.execute(agent)
+                return self.setplay_indirect_freekick.execute(agent)
             elif (wm.ball.position.x > agent.server_params.their_penalty_area_line_x - 1.0 and
                   abs(wm.ball.position.y) < agent.server_params.penalty_area_half_width + 1.0):
-                return setplay_indirect_freekick.execute(agent)
+                return self.setplay_indirect_freekick.execute(agent)
 
         if wm.is_our_set_play:
-            return setplay_freekick.execute(agent)
+            return self.setplay_freekick.execute(agent)
         else:
             return self.doBasicTheirSetPlayMove(agent)
-
-        
 
     def get_set_play_dash_power(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
@@ -271,12 +266,11 @@ class BhvStarterSetPlay(IBehavior):
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
         if adjusted_point != target_point and ball_position.dist(target_point) > 10.0 and Tools.inertia_final_point(agent.player_types[wm.self.id], self_position, self_velocity).dist(adjusted_point) < dist_thr:
             adjusted_point = target_point
-        actions = []
-        actions.append(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(adjusted_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
+        agent.add_action(PlayerAction(body_go_to_point=Body_GoToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(adjusted_point), distance_threshold=dist_thr, max_dash_power=dash_power)))
         body_angle = wm.ball.angle_from_self
         if body_angle < 0.0:
             body_angle -= 90.0
         else:
             body_angle += 90.0
-            actions.append(PlayerAction(body_turn_to_angle=Body_TurnToAngle(angle=body_angle)))
-        return actions
+            agent.add_action(PlayerAction(body_turn_to_angle=Body_TurnToAngle(angle=body_angle)))
+        return True

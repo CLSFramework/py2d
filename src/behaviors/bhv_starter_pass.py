@@ -14,6 +14,7 @@ class BhvStarterPass(IBehavior):
         pass
 
     def execute(self, agent: "SamplePlayerAgent") -> bool:
+        agent.logger.debug("BhvStarterPass.execute")
         wm = agent.wm
         targets: list[Vector2D] = []
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
@@ -36,8 +37,14 @@ class BhvStarterPass(IBehavior):
                 if target.x() > best_target.x():
                     best_target = target
             if wm.game_mode_type == GameModeType.PlayOn:
+                agent.add_log_message(LoggerLevel.PASS, f": Passing to {best_target}", agent.wm.self.position.x, agent.wm.self.position.y - 2, '\033[31m')
+                agent.add_log_text(LoggerLevel.PASS, f": Passing to {best_target}")
+                agent.logger.debug(f"Passing to {best_target}")
                 agent.add_action(PlayerAction(body_smart_kick=Body_SmartKick(target_point=Tools.convert_vector2d_to_rpc_vector2d(best_target), first_speed=2.5, first_speed_threshold=2.5, max_steps=3)))
             else :
+                agent.add_log_message(LoggerLevel.PASS, f": Passing to {best_target}", agent.wm.self.position.x, agent.wm.self.position.y - 2, '\033[31m')
+                agent.add_log_text(LoggerLevel.PASS, f": Passing to {best_target}")
+                agent.logger.debug(f"Passing to {best_target}")
                 agent.add_action(PlayerAction(body_smart_kick=Body_SmartKick(target_point=Tools.convert_vector2d_to_rpc_vector2d(best_target), first_speed=2.7, first_speed_threshold=2.5, max_steps=1)))
             return True
         

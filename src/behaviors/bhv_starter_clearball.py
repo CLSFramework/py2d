@@ -34,6 +34,10 @@ class BhvStarterClearBall(IBehavior):
                     target = Vector2D(ball_pos.x(), 34.0)
                 else : 
                     target = Vector2D(ball_pos.x(), -34.0)
+        
+        agent.add_log_message(LoggerLevel.CLEAR, f": Clearing to {target}", agent.wm.self.position.x, agent.wm.self.position.y - 2, '\033[31m')
+        agent.add_log_text(LoggerLevel.CLEAR, f": Clearing to {target}")
+        agent.logger.debug(f"Clearing to {target}")
         agent.add_action(PlayerAction(body_smart_kick=Body_SmartKick(target_point=Tools.convert_vector2d_to_rpc_vector2d(target),
                                                                      first_speed=2.7,
                                                                      first_speed_threshold=2.7,

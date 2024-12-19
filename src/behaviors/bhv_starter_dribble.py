@@ -15,6 +15,7 @@ class BhvStarterDribble(IBehavior):
         pass
 
     def execute(self, agent: "SamplePlayerAgent") -> bool:
+        agent.logger.debug("BhvStarterDribble.execute")
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
         dribble_angle = (Vector2D(52.5, 0) - ball_pos).th().degree()
@@ -24,6 +25,9 @@ class BhvStarterDribble(IBehavior):
         
         if not Tools.exist_opponent_in(agent , dribble_sector):
             target = Vector2D.polar2vector(3, dribble_angle) + ball_pos
+            agent.add_log_message(LoggerLevel.DRIBBLE, f": Dribbling to {target}", agent.wm.self.position.x, agent.wm.self.position.y - 2, '\033[31m')
+            agent.add_log_text(LoggerLevel.DRIBBLE, f": Dribbling to {target}")
+            agent.logger.debug(f"Dribbling to {target}")
             agent.add_action(PlayerAction(body_smart_kick=Body_SmartKick(target_point=Tools.convert_vector2d_to_rpc_vector2d(target),
                                                                          first_speed=dribble_speed,
                                                                          first_speed_threshold=dribble_threshold,
