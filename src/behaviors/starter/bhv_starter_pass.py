@@ -31,7 +31,7 @@ class BhvStarterPass(IBehavior):
         if best_target is not None:
             first_speed = 2.5 if wm.game_mode_type == GameModeType.PlayOn else 2.7
             first_speed_threshold = (
-                2.5 if wm.game_mode_type == GameModeType.PlayOn else 2.7
+                2.5 if wm.game_mode_type == GameModeType.PlayOn else 0.0
             )
             max_steps = 3 if wm.game_mode_type == GameModeType.PlayOn else 1
 

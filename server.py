@@ -19,7 +19,7 @@ import traceback
 console_logging_level = logging.INFO
 file_logging_level = logging.INFO
 player_console_logging_level = logging.INFO
-player_file_logging_level = logging.INFO
+player_file_logging_level = logging.DEBUG
 
 main_logger = None
 log_dir = None

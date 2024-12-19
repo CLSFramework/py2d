@@ -15,6 +15,7 @@ class BhvStarterSetPlayKickOff:
         """
         Execute the kickoff behavior.
         """
+        agent.logger.debug("BhvStarterSetPlayKickOff.execute")
         wm = agent.wm
         teammates = Tools.get_teammates_from_ball(agent)
 
@@ -32,6 +33,7 @@ class BhvStarterSetPlayKickOff:
             BhvStarterGoToPlacedBall,
         )
         from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
+        agent.logger.debug("BhvStarterSetPlayKickOff.do_kick")
 
         go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
 
@@ -69,6 +71,8 @@ class BhvStarterSetPlayKickOff:
                 )
             )
         )
+        agent.logger.debug(f"BhvStarterSetPlayKickOff.do_kick: kick to {target_point}")
+        
         return True
 
     def do_move(self, agent: "SamplePlayerAgent"):

@@ -8,7 +8,6 @@ from pyrusgeom.segment_2d import Segment2D
 from pyrusgeom.circle_2d import Circle2D
 from pyrusgeom.angle_deg import AngleDeg
 from src.utils.tools import Tools
-from src.strategy.starter_strategy import StarterStrategy
 from src.utils.tools import Tools
 from src.behaviors.starter.bhv_starter_setplay_kickoff import (
     BhvStarterSetPlayKickOff,
