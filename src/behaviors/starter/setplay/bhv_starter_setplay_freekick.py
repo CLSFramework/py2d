@@ -16,6 +16,7 @@ class BhvStarterSetPlayFreeKick:
         pass
     
     def execute(self, agent: "SamplePlayerAgent"):
+        
         from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         selfplay = BhvStarterSetPlay()
         if selfplay.is_kicker(agent):

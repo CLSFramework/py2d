@@ -16,13 +16,12 @@ class BhvStarterGoToPlacedBall:
 
     def execute(self, agent: "SamplePlayerAgent") -> bool:
         '''
-        Execute the go to placed ball behavior in setplay.
+        Execute the movment behavior of the kicker in setplay which is finding the place that agent should be.
         Args:
             agent (SamplePlayerAgent): The agent that will execute the
                 behavior.
         Returns:
-            bool: True if the behavior was executed successfully, False
-                otherwise.
+            bool: True if the action was added to the agent's action list,False otherwise.
         '''
         
         setplay = BhvStarterSetPlay()
@@ -30,6 +29,7 @@ class BhvStarterGoToPlacedBall:
         dir_margin = 15.0
         sp = agent.server_params
         wm = agent.wm
+        #angle between self and ball
         angle_diff = wm.ball.angle_from_self - self.M_ball_place_angle
 
         if abs(angle_diff) < dir_margin and wm.ball.dist_from_self < (agent.player_types[wm.self.id].player_size + sp.ball_size + 0.08):
@@ -38,9 +38,9 @@ class BhvStarterGoToPlacedBall:
 
         # decide sub-target point
         ball_position = Tools.convert_rpc_vector2d_to_vector2d(wm.ball.position)
-        self_position = Tools.convert_rpc_vector2d_to_vector2d(wm.self.position)
         sub_target = ball_position + Vector2D.polar2vector(2.0, self.M_ball_place_angle + 180.0)
 
+        # calculate dash power base on the distance to the ball
         dash_power = 20.0
         dash_speed = -1.0
         if wm.ball.dist_from_self > 2.0:

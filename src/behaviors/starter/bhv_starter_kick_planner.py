@@ -27,8 +27,7 @@ class BhvStarterKickPlanner(IBehavior):
             agent (SamplePlayerAgent): The agent that will execute the
                 behavior.
         Returns:
-            bool: True if the behavior was executed successfully, False
-                otherwise.
+            bool: True if the action was added to the agent's action list,False otherwise.
         '''
         agent.logger.debug("BhvStarterKickPlanner.execute")
         
