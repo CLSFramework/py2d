@@ -17,6 +17,16 @@ class BhvStarterDribble(IBehavior):
 
     # Execute the dribbling behavior
     def execute(self, agent: "SamplePlayerAgent") -> bool:
+        '''
+        Execute the dribbling behavior.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the
+                behavior.
+        Returns:
+            bool: True if the behavior was executed successfully, False
+                otherwise.
+        '''
+        
         agent.logger.debug("BhvStarterDribble.execute")
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)  # Get ball position

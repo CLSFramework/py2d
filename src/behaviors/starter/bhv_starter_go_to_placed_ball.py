@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
-#from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay #TODO
+from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
 from src.utils.tools import Tools
 
 if TYPE_CHECKING:
@@ -15,7 +15,16 @@ class BhvStarterGoToPlacedBall:
         
 
     def execute(self, agent: "SamplePlayerAgent") -> bool:
-        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
+        '''
+        Execute the go to placed ball behavior in setplay.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the
+                behavior.
+        Returns:
+            bool: True if the behavior was executed successfully, False
+                otherwise.
+        '''
+        
         setplay = BhvStarterSetPlay()
         
         dir_margin = 15.0

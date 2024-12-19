@@ -101,6 +101,16 @@ def kill_rpc_server_process(processes):
         except ProcessLookupError:
             pass  # The process might have already exited
 
+def check_rcssserver_process(args):
+    import psutil 
+    for conn in psutil.net_connections(kind='inet'):
+        server_host_ip = args.server_host if args.server_host != 'localhost' else '0.0.0.0'
+        # start_team_logger.debug(f"Checking connection: {conn.laddr.ip=}, {conn.laddr.port=}, {args.server_host=}, {server_host_ip=}")
+        if conn.laddr.port == int(args.server_port) and conn.laddr.ip == server_host_ip:
+            # start_team_logger.debug(f"Found rcssserver process with PID: {conn.pid}")
+            return True
+    return False
+
 def check_args(args):
     if args.team_name != 'CLS' and args.use_random_name:
         raise ValueError("Cannot use both --team_name and --use-random-name")
@@ -196,6 +206,16 @@ if __name__ == "__main__":
 
         # Monitor both processes and log their outputs
         start_team_logger.debug("Monitoring processes...")
+
+        #Check that rcssserver is running for 10 seconds 
+        start_time = time.time()
+        start_team_logger.debug("Checking for rcssserver process...")
+        while not check_rcssserver_process(args):
+            if time.time() - start_time > 10:
+                raise Exception("rcssserver process not found.")
+            time.sleep(1)
+        start_team_logger.debug("rcssserver process found.")
+    
         
         start_threads: list[threading.Thread] = []
         for i, start_process in enumerate(all_start_processes):

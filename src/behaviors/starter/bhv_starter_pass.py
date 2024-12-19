@@ -15,6 +15,15 @@ class BhvStarterPass(IBehavior):
         pass
 
     def execute(self, agent: "SamplePlayerAgent") -> bool:
+        '''
+        Execute the passing behavior which is finding the best pass target and executing the pass action.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the
+                behavior.
+        Returns:
+            bool: True if the behavior was executed successfully, False
+                otherwise.
+        '''
         # Log the execution of the behavior
         agent.logger.debug("BhvStarterPass.execute")
         

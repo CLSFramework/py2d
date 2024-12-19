@@ -14,7 +14,15 @@ class BhvStarterShoot(IBehavior):
         pass
 
     def execute(self, agent: "SamplePlayerAgent") -> bool:
-        """Executes the shooting behavior for the agent."""
+        """Executes the shooting behavior for the agent.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the
+                behavior.
+        Returns:
+            bool: True if the behavior was executed successfully, False
+                otherwise.
+        """
+        
         agent.logger.debug("BhvStarterShoot.execute")
         wm = agent.wm
         ball_pos = Vector2D(wm.ball.position.x, wm.ball.position.y)
