@@ -31,9 +31,6 @@ class BhvStarterSetPlay(IBehavior):
 
     def execute(self, agent: "SamplePlayerAgent"):
         agent.logger.debug("BhvStarterSetPlay.execute")
-        return self.decision(agent)
-               
-    def decision(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
         if wm.self.is_goalie:
             if wm.game_mode_type != GameModeType.BackPass_ and wm.game_mode_type != GameModeType.IndFreeKick_:

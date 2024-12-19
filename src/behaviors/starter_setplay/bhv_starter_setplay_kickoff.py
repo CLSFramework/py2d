@@ -34,8 +34,9 @@ class BhvStarterSetPlayKickOff:
         go_to_placed_ball.execute(agent)
         
         # Wait
-        self.do_kick_wait(agent)
-            
+        if self.do_kick_wait(agent):
+            agent.logger.debug("BhvStarterSetPlayKickOff.do_kick: wait")
+            return True
         
         # Kick
         wm = agent.wm
@@ -108,8 +109,8 @@ class BhvStarterSetPlayKickOff:
         from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         wm = agent.wm
-        target = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))
-        target_point = Vector2D(target.x, target.y)
+        
+        target_point = agent.strategy.get_position(wm.self.uniform_number, agent)
         target_point.set_x(min(-0.5, target_point.x()))
         dash_power = setplay.get_set_play_dash_power(agent)
         dist_thr = wm.ball.dist_from_self * 0.07
