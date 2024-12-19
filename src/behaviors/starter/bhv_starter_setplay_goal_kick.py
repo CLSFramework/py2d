@@ -1,18 +1,16 @@
 from typing import TYPE_CHECKING
-from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
-#from src.setplay.BhvSetPlay import BhvSetPlay
 from src.behaviors.starter.bhv_starter_clearball import BhvStarterClearBall
 from src.utils.tools import Tools
-from src.behaviors.starter.bhv_starter_kick_planner import BhvStarterKickPlanner
 from src.behaviors.starter.bhv_starter_pass import BhvStarterPass
-from src.strategy.starter_strategy import StarterStrategy
 from src.behaviors.starter.bhv_starter_clearball import BhvStarterClearBall
 from src.utils.tools import Tools
 
+
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
+    
 class BhvStarterSetPlayGoalKick:
     def __init__(self):
         pass
@@ -27,12 +25,16 @@ class BhvStarterSetPlayGoalKick:
 
     def do_kick(self, agent: "SamplePlayerAgent"):
         from src.behaviors.starter.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
+        
         go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
         self.do_second_kick(agent)
         
-        go_to_placed_ball.execute(agent)
-
-        if self.do_kick_wait(agent):
+        if go_to_placed_ball.execute(agent):
+            return True
+        
+        set_play = BhvStarterSetPlay()
+        if set_play.do_kick_wait(agent):
             return True
         
         self.do_pass(agent)
@@ -69,39 +71,6 @@ class BhvStarterSetPlayGoalKick:
         agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=0, y=0), cycle=2)))
         
         return True
-
-    def do_kick_wait(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
-        setplay = BhvStarterSetPlay()
-        wm = agent.wm
-        real_set_play_count = wm.cycle - wm.last_set_play_start_time
-
-        if real_set_play_count >= agent.server_params.drop_ball_time - 10:
-            return False
-        if setplay.is_delaying_tactics_situation(agent):
-            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return True
-        
-        if abs(wm.ball.angle_from_self - wm.self.body_direction) > 3.0:
-            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return True
-        
-        if wm.set_play_count <= 6:
-            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return True
-
-        if wm.set_play_count <= 30 and len(Tools.get_teammates_from_self(agent)) == 0:
-            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return True
-        
-        if wm.set_play_count >= 15 and wm.see_time == wm.cycle and wm.self.stamina > agent.server_params.stamina_max:
-            return False
-        
-        if wm.set_play_count <= 3 or wm.see_time != wm.cycle or wm.self.stamina < agent.server_params.stamina_max * 0.9:
-            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return True
-            
-        return False
 
     def do_pass(self, agent: "SamplePlayerAgent"):
         passer = BhvStarterPass()
