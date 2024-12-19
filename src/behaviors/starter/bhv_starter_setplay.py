@@ -130,10 +130,19 @@ class BhvStarterSetPlay(IBehavior):
                 )
         return wm.self.get_safety_dash_power
 
-    #Check if agent can go to the target point base on the restricted circle in setplay
     def can_go_to(
         self, agent: IAgent, wm, ball_circle: Circle2D, target_point: Vector2D
     ) -> bool:
+        '''
+        Check if the agent can go to the target point based on the restricted circle in setplay mode.
+        Args:
+            agent (IAgent): The agent object containing server parameters and player information.
+            wm: The world model object containing the current state of the game.
+            ball_circle: The restricted circle around the ball.
+            target_point: The target point to be evaluated.
+        Returns:
+            bool: True if the agent can go to the target point, False otherwise.
+        '''
         wm = agent.wm
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
 
@@ -150,9 +159,16 @@ class BhvStarterSetPlay(IBehavior):
                 return True
         return False
 
-    #Finding the agent movement base on the restricted circle in setplaye  
     def get_avoid_circle_point(self, wm, target_point, agent: IAgent):
-
+        '''
+        Find the best target point based on the restricted circle in setplay mode.
+        Args:
+            wm: The world model object containing the current state of the game.
+            target_point: The initial target point to be evaluated.
+            agent (IAgent): The agent object containing server parameters and player information.
+        Returns:
+            Vector2D: The best target point that avoids the restricted circle.
+        '''
         SP = agent.server_params
         wm = agent.wm
         avoid_radius = SP.center_circle_r + agent.player_types[wm.self.id].player_size
@@ -184,8 +200,14 @@ class BhvStarterSetPlay(IBehavior):
 
         return target_point
 
-    #Check that if the agent should kick or not 
     def is_kicker(self, agent: "SamplePlayerAgent"):
+        '''
+        Check if the agent is the kicker in setplay mode.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the behavior.
+        Returns:
+            bool: True if the agent is the kicker, False otherwise.
+        '''
         wm = agent.wm
         min_dist = 10000.0
         unum = 0
@@ -211,10 +233,20 @@ class BhvStarterSetPlay(IBehavior):
         return False
 
     
-    def is_delaying_tactics_situation(self, agent: IAgent):
+    def is_delaying_tactics_situation(self, agent: IAgent): 
+        ''' 
+        Check if the situation involves delaying tactics. 
+        Args: 
+            agent (IAgent): The agent that will execute the behavior. 
+        Returns: 
+            bool: True if it is a delaying tactics situation, False otherwise. 
+        '''
         wm = agent.wm
+        # Calculate the number of cycles since the last set play started
         real_set_play_count = wm.cycle - wm.last_set_play_start_time
+
         wait_buf = 15 if wm.game_mode_type == GameModeType.GoalKick_ else 2
+
         if real_set_play_count >= agent.server_params.drop_ball_time - wait_buf:
             return False
         our_score = (
@@ -226,24 +258,27 @@ class BhvStarterSetPlay(IBehavior):
         """if wm.audioMemory().recoveryTime().cycle >= wm.cycle - 10:
             if our_score > opp_score:
                 return True"""  # TODO audio memory
-        cycle_thr = max(
-            0,
-            agent.server_params.nr_normal_halfs * (agent.server_params.half_time * 10)
-            - 500,
-        )
+        cycle_thr = max(0, agent.server_params.nr_normal_halfs * (agent.server_params.half_time * 10)- 500)
         if wm.cycle < cycle_thr:
             return False
         if our_score > opp_score and our_score - opp_score <= 1:
             return True
         return False
 
-    #Set Play basic move
     def do_basic_their_set_play_move(self, agent: "SamplePlayerAgent"):
-        wm = agent.wm
-        target_point = agent.strategy.get_position(wm.self.uniform_number, agent)
-        ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
-        dash_power = self.get_set_play_dash_power(agent)
-        ball_to_target = Vector2D(target_point - ball_position)
+        '''
+        Perform the basic move during the opponent's set play.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the behavior.
+        '''
+        wm = agent.wm  # Access the agent's world model
+
+        target_point = agent.strategy.get_position(wm.self.uniform_number, agent)  # Determine the target position based on strategy
+        ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)  # Get the ball's current position
+        dash_power = self.get_set_play_dash_power(agent)  # Calculate the dash power for the set play
+        ball_to_target = Vector2D(target_point - ball_position)  # Vector from the ball to the target
+
+        # Adjust the target point if it is too close to the ball
         if ball_to_target.r() < 11.0:
             xdiff = math.sqrt(math.pow(11.0, 2) - math.pow(ball_to_target.y(), 2))
             target_point.set_x(wm.ball.position.x - xdiff)
@@ -251,18 +286,20 @@ class BhvStarterSetPlay(IBehavior):
                 target_point = ball_position
                 target_point += ball_to_target.set_length_vector(11.0)
 
+        # Adjust target point for kickoff offside rule
         if wm.game_mode_type == GameModeType.KickOff_ and agent.server_params.kickoff_offside:
             target_point.set_x(min(-1.0e-5, target_point.x()))
 
-        adjusted_point = self.get_avoid_circle_point(wm, target_point, agent)
-        dist_thr = wm.ball.dist_from_self * 0.1
+        adjusted_point = self.get_avoid_circle_point(wm, target_point, agent)  # Adjust the target to avoid obstacles
+        dist_thr = wm.ball.dist_from_self * 0.1  # Calculate distance threshold based on ball distance
 
         if dist_thr < 0.7:
             dist_thr = 0.7
 
-        self_velocity = Vector2D(wm.self.velocity.x, wm.self.velocity.y)
-        self_position = Vector2D(wm.self.position.x, wm.self.position.y)
-        
+        self_velocity = Vector2D(wm.self.velocity.x, wm.self.velocity.y)  # Agent's current velocity
+        self_position = Vector2D(wm.self.position.x, wm.self.position.y)  # Agent's current position
+
+        # Adjust target point if necessary based on distance and inertia
         if (
             adjusted_point != target_point
             and ball_position.dist(target_point) > 10.0
@@ -272,6 +309,8 @@ class BhvStarterSetPlay(IBehavior):
             < dist_thr
         ):
             adjusted_point = target_point
+
+        # Add the action to move to the target point
         agent.add_action(
             PlayerAction(
                 body_go_to_point=Body_GoToPoint(
@@ -281,15 +320,27 @@ class BhvStarterSetPlay(IBehavior):
                 )
             )
         )
+
+        # Calculate the angle to turn the body based on ball position
         body_angle = wm.ball.angle_from_self
         body_angle += 90.0 if ball_position.y() < 0.0 else -90.0
+
+        # Add the action to turn to the calculated angle
         agent.add_action(
             PlayerAction(body_turn_to_angle=Body_TurnToAngle(angle=body_angle))
         )
+
         return True
-    
-    #Check gent waiting before kick 
+
     def do_kick_wait(self, agent: "SamplePlayerAgent", action: PlayerAction = None):
+        '''
+        Perform the kick wait behavior for the agent.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the behavior.
+            action (PlayerAction): The action to be executed
+        Returns:
+            bool: True if any action was added to the agent action list, False otherwise.
+        '''
         wm = agent.wm
         
         if action is None:
@@ -326,3 +377,4 @@ class BhvStarterSetPlay(IBehavior):
             return True
 
         return False
+    
