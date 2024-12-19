@@ -5,7 +5,7 @@ from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
 from pyrusgeom.segment_2d import Segment2D
 from pyrusgeom.circle_2d import Circle2D
-from src.behaviors.bhv_starter_pass import BhvStarterPass
+from src.behaviors.starter.bhv_starter_pass import BhvStarterPass
 from src.utils.tools import Tools
 import pyrusgeom.soccer_math as smath
 from pyrusgeom.soccer_math import *
@@ -23,7 +23,7 @@ class BhvStarterSetPlayIndirectFreeKick:
         
 
     def execute(self, agent: "SamplePlayerAgent") -> bool:
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         wm = agent.wm
         our_kick = (wm.game_mode_type == GameModeType.BackPass_ and wm.game_mode_side != wm.our_side) or (wm.game_mode_type == GameModeType.IndFreeKick_ and wm.game_mode_side == wm.our_side) or (wm.game_mode_type == GameModeType.FoulCharge_ and wm.game_mode_side != wm.our_side) or (wm.game_mode_type == GameModeType.FoulPush_ and  wm.game_mode_side != wm.our_side ) 
@@ -38,8 +38,8 @@ class BhvStarterSetPlayIndirectFreeKick:
             return self.do_defense_move(agent)
 
     def do_kicker(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
         # go to ball
         go_to_placed_ball.execute(agent)
@@ -162,7 +162,7 @@ class BhvStarterSetPlayIndirectFreeKick:
         return True
 
     def get_avoid_circle_point(self, agent: IAgent, point: Vector2D):
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         SP = agent.server_params
         wm = agent.wm

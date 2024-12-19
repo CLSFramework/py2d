@@ -28,10 +28,10 @@ class BhvStarterSetPlayKickOff:
         """
         Perform the kick action.
         """
-        from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import (
+        from src.behaviors.starter.bhv_starter_go_to_placed_ball import (
             BhvStarterGoToPlacedBall,
         )
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
 
         go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
 
@@ -46,7 +46,7 @@ class BhvStarterSetPlayKickOff:
             return True
 
         # Perform the kick
-        from src.behaviors.bhv_starter_pass import BhvStarterPass
+        from src.behaviors.starter.bhv_starter_pass import BhvStarterPass
         bhv_starter_pass = BhvStarterPass()
         if bhv_starter_pass.execute(agent):
             agent.logger.debug("BhvStarterSetPlayKickOff.do_kick: pass")
@@ -75,7 +75,7 @@ class BhvStarterSetPlayKickOff:
         """
         Move to the appropriate position.
         """
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
 
         setplay = BhvStarterSetPlay()
         wm = agent.wm

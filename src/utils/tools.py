@@ -407,7 +407,7 @@ class Tools:
         Returns:
             Player: Teammate player nearest to the given point
         """
-        point_vec = Vector2D(point.x, point.y)
+        point_vec = Vector2D(point.x, point.y) if isinstance(point, RpcVector2D) else point
         teammates = [tm for tm in agent.wm.teammates if tm and tm.uniform_number != agent.wm.self.uniform_number]
         nearest_tm = min(teammates, key=lambda i: Vector2D(i.position.x, i.position.y).dist(point_vec), default=None)
         return nearest_tm

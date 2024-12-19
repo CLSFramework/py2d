@@ -9,11 +9,11 @@ from pyrusgeom.line_2d import Line2D
 from pyrusgeom.ray_2d import Ray2D
 from pyrusgeom.size_2d import Size2D
 from pyrusgeom.rect_2d import Rect2D
-from src.behaviors.bhv_starter_dribble import BhvStarterDribble
-from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+from src.behaviors.starter.bhv_starter_dribble import BhvStarterDribble
+from src.behaviors.starter.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
 from service_pb2 import *
 from src.utils.tools import Tools
-from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
+from src.behaviors.starter.bhv_starter_clearball import BhvStarterClearBall
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent

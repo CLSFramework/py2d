@@ -1,9 +1,8 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
-from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 from src.behaviors.bhv_setplay import BhvSetPlay
-from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent

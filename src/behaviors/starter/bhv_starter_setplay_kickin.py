@@ -5,7 +5,7 @@ from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
 
 # from src.setplay.BhvGoToPlacedBall import BhvGoToPlacedBall
-from src.behaviors.bhv_starter_pass import BhvStarterPass
+from src.behaviors.starter.bhv_starter_pass import BhvStarterPass
 from src.utils.tools import Tools
 import math
 from pyrusgeom.soccer_math import *
@@ -25,7 +25,7 @@ class BhvStarterSetPlayKickIn:
         pass
 
     def execute(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
 
         setplay = BhvStarterSetPlay()
 
@@ -35,10 +35,10 @@ class BhvStarterSetPlayKickIn:
             return self.do_move(agent)
 
     def do_kick(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import (
+        from src.behaviors.starter.bhv_starter_go_to_placed_ball import (
             BhvStarterGoToPlacedBall,
         )
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
 
         wm = agent.wm
         # Go to the kick position
@@ -144,7 +144,7 @@ class BhvStarterSetPlayKickIn:
         return True
 
     def do_move(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
 
         setplay = BhvStarterSetPlay()
         wm = agent.wm

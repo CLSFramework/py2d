@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
-from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *

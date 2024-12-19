@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
-from src.interfaces.IAgent import IAgent
 from src.decision_makers.kick_decision_maker import KickDecisionMaker
 from src.decision_makers.move_decision_maker import MoveDecisionMaker
 

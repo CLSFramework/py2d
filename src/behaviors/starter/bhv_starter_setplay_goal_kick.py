@@ -3,12 +3,12 @@ from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
 #from src.setplay.BhvSetPlay import BhvSetPlay
-from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
+from src.behaviors.starter.bhv_starter_clearball import BhvStarterClearBall
 from src.utils.tools import Tools
-from src.behaviors.bhv_starter_kick_planner import BhvStarterKickPlanner
-from src.behaviors.bhv_starter_pass import BhvStarterPass
+from src.behaviors.starter.bhv_starter_kick_planner import BhvStarterKickPlanner
+from src.behaviors.starter.bhv_starter_pass import BhvStarterPass
 from src.strategy.starter_strategy import StarterStrategy
-from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
+from src.behaviors.starter.bhv_starter_clearball import BhvStarterClearBall
 from src.utils.tools import Tools
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ class BhvStarterSetPlayGoalKick:
         pass
     
     def execute(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         if setplay.is_kicker(agent):
             return self.do_kick(agent)
@@ -26,7 +26,7 @@ class BhvStarterSetPlayGoalKick:
             return self.do_move(agent)
 
     def do_kick(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        from src.behaviors.starter.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
         go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
         self.do_second_kick(agent)
         
@@ -71,7 +71,7 @@ class BhvStarterSetPlayGoalKick:
         return True
 
     def do_kick_wait(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         wm = agent.wm
         real_set_play_count = wm.cycle - wm.last_set_play_start_time
@@ -132,7 +132,7 @@ class BhvStarterSetPlayGoalKick:
         return False
 
     def do_move(self, agent:"SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         actions = []
         actions += self.do_intercept(agent)

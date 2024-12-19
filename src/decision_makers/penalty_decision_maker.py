@@ -1,9 +1,8 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
-from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 from src.behaviors.bhv_penalty import BhvPenalty
-from src.behaviors.bhv_starter_penalty import BhvStarterPenalty
+from src.behaviors.starter.bhv_starter_penalty import BhvStarterPenalty
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent

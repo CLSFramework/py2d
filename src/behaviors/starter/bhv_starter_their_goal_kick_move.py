@@ -72,7 +72,7 @@ class BhvStarterTheirGoalKickMove:
 
     def do_normal(self, agent: "SamplePlayerAgent"):
         wm = agent.wm
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         dash_power = setplay.get_set_play_dash_power(agent)
         targ = Tools.convert_vector2d_to_rpc_vector2d(agent.strategy.get_position(wm.self.uniform_number, agent))

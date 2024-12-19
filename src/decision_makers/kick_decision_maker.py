@@ -1,11 +1,10 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
-from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *
 from src.behaviors.bhv_kick_planner import BhvKickPlanner
-from src.behaviors.bhv_starter_kick_planner import BhvStarterKickPlanner
+from src.behaviors.starter.bhv_starter_kick_planner import BhvStarterKickPlanner
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent

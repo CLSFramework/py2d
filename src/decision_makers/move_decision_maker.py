@@ -1,14 +1,12 @@
 from typing import TYPE_CHECKING
 from src.interfaces.IDecisionMaker import IDecisionMaker
-from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *
 from src.utils.tools import Tools
 from src.behaviors.bhv_block import Bhv_Block
 from src.behaviors.bhv_tackle import BhvTackle
-from src.behaviors.bhv_starter_tackle import BhvStarterTackle
-from src.strategy.starter_strategy import StarterStrategy
+from src.behaviors.starter.bhv_starter_tackle import BhvStarterTackle
 
 
 if TYPE_CHECKING:
@@ -102,12 +100,12 @@ class MoveDecisionMaker(IDecisionMaker):
     s_recover_mode = False
     
     @staticmethod
-    def get_normal_dash_power(agent: IAgent) -> float:
+    def get_normal_dash_power(agent: "SamplePlayerAgent") -> float:
         """
         Get the normal dash power for the agent based on the current world model state.
         This method calculates the normal dash power for the agent based on the stamina level, ball position, and other factors.
         Args:
-            agent (IAgent): The agent for which the dash power is being calculated
+            agent (SamplePlayerAgent): The agent for which the dash power is being calculated
         Returns:
             float: The normal dash power for the agent.
         """

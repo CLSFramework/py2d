@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 import math
 from service_pb2 import *
 from pyrusgeom.soccer_math import calc_length_geom_series
-from src.behaviors.bhv_starter_pass import BhvStarterPass
+from src.behaviors.starter.bhv_starter_pass import BhvStarterPass
 from src.utils.tools import Tools
 import math
-from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
+from src.behaviors.starter.bhv_starter_clearball import BhvStarterClearBall
 
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ class BhvStarterSetPlayFreeKick:
         pass
     
     def execute(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         selfplay = BhvStarterSetPlay()
         if selfplay.is_kicker(agent):
             return self.doKick(agent)
@@ -24,8 +24,8 @@ class BhvStarterSetPlayFreeKick:
             return self.do_move(agent)
 
     def doKick(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
         
         # go to the ball position
@@ -99,7 +99,7 @@ class BhvStarterSetPlayFreeKick:
                 target_point.set_y(min(max(-agent.server_params.pitch_half_width, target_point.y()), agent.server_params.pitch_half_width))
 
         target_point.set_x(min(target_point.x(), wm.offside_line_x - 0.5))
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         selfplay = BhvStarterSetPlay()
         dash_power = selfplay.get_set_play_dash_power(agent)
         dist_thr = wm.ball.dist_from_self * 0.07

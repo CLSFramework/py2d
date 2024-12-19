@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
-#from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay #TODO
+#from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay #TODO
 from src.utils.tools import Tools
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ class BhvStarterGoToPlacedBall:
         
 
     def execute(self, agent: "SamplePlayerAgent") -> bool:
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
+        from src.behaviors.starter.bhv_starter_setplay import BhvStarterSetPlay
         setplay = BhvStarterSetPlay()
         
         dir_margin = 15.0

@@ -3,10 +3,10 @@ from src.interfaces.IBehavior import IBehavior
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *
-from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
-from src.behaviors.bhv_starter_pass import BhvStarterPass
-from src.behaviors.bhv_starter_dribble import BhvStarterDribble
-from src.behaviors.bhv_starter_shoot import BhvStarterShoot
+from src.behaviors.starter.bhv_starter_clearball import BhvStarterClearBall
+from src.behaviors.starter.bhv_starter_pass import BhvStarterPass
+from src.behaviors.starter.bhv_starter_dribble import BhvStarterDribble
+from src.behaviors.starter.bhv_starter_shoot import BhvStarterShoot
 from src.utils.tools import Tools
 
 

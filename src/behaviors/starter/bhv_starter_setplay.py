@@ -10,22 +10,22 @@ from pyrusgeom.angle_deg import AngleDeg
 from src.utils.tools import Tools
 from src.strategy.starter_strategy import StarterStrategy
 from src.utils.tools import Tools
-from src.behaviors.starter_setplay.bhv_starter_setplay_kickoff import (
+from src.behaviors.starter.bhv_starter_setplay_kickoff import (
     BhvStarterSetPlayKickOff,
 )
-from src.behaviors.starter_setplay.bhv_starter_their_goal_kick_move import (
+from src.behaviors.starter.bhv_starter_their_goal_kick_move import (
     BhvStarterTheirGoalKickMove,
 )
-from src.behaviors.starter_setplay.bhv_starter_setplay_freekick import (
+from src.behaviors.starter.bhv_starter_setplay_freekick import (
     BhvStarterSetPlayFreeKick,
 )
-from src.behaviors.starter_setplay.bhv_starter_setplay_goal_kick import (
+from src.behaviors.starter.bhv_starter_setplay_goal_kick import (
     BhvStarterSetPlayGoalKick,
 )
-from src.behaviors.starter_setplay.bhv_starter_setplay_kickin import (
+from src.behaviors.starter.bhv_starter_setplay_kickin import (
     BhvStarterSetPlayKickIn,
 )
-from src.behaviors.starter_setplay.bhv_starter_setplay_indirect_freekick import (
+from src.behaviors.starter.bhv_starter_setplay_indirect_freekick import (
     BhvStarterSetPlayIndirectFreeKick,
 )
 
