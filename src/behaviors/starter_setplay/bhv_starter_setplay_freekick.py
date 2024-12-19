@@ -1,17 +1,12 @@
 from typing import TYPE_CHECKING
 import math
-from src.interfaces.IAgent import IAgent
 from service_pb2 import *
-from pyrusgeom.vector_2d import Vector2D
 from pyrusgeom.soccer_math import calc_length_geom_series
-from pyrusgeom.soccer_math import calc_first_term_geom_series
 from src.behaviors.bhv_starter_pass import BhvStarterPass
 from src.utils.tools import Tools
 import math
 from src.behaviors.bhv_starter_clearball import BhvStarterClearBall
-from pyrusgeom.angle_deg import AngleDeg
-from src.strategy.starter_strategy import StarterStrategy
-from src.utils.tools import Tools
+
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
@@ -30,11 +25,15 @@ class BhvStarterSetPlayFreeKick:
 
     def doKick(self, agent: "SamplePlayerAgent"):
         from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
         
         # go to the ball position
         go_to_placed_ball.execute(agent)
-        if self.doKickWait(agent):
+        
+        # wait before kicking
+        setplay = BhvStarterSetPlay()
+        if setplay.do_kick_wait(agent):
             return True
         
         # kick
@@ -74,49 +73,6 @@ class BhvStarterSetPlayFreeKick:
         clear_ball = BhvStarterClearBall()
         clear_ball.execute(agent)
         return True
-
-    def doKickWait(self, agent: "SamplePlayerAgent"):
-        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
-        selfplay = BhvStarterSetPlay()
-        wm = agent.wm
-        real_set_play_count = wm.cycle - wm.last_set_play_start_time
-
-        if real_set_play_count >= agent.server_params.drop_ball_time - 5:
-            return False
-
-        face_point = Vector2D(40.0, 0.0)
-        self_position = Tools.convert_rpc_vector2d_to_vector2d(wm.self.position)
-        face_angle = (face_point - self_position).th()
-
-        if wm.stoped_cycle != 0:
-            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point))))
-            return True
-
-        if selfplay.is_delaying_tactics_situation(agent):
-            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point))))
-            return True
-
-        if not Tools.get_teammates_from_ball(agent):
-            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point))))
-            return True
-
-        if wm.set_play_count <= 3:
-            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point))))
-            return True
-
-        if wm.set_play_count >= 15 and wm.see_time == wm.cycle and wm.self.stamina > agent.server_params.stamina_max * 0.6:
-            return False
-        
-        if abs(face_angle.degree() - wm.self.body_direction) > 5.0:
-            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point))))
-            return True
-
-        if (wm.see_time != wm.cycle or
-                wm.self.stamina < agent.server_params.stamina_max * 0.9):
-            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return True
-        
-        return False
 
     def do_move(self, agent: "SamplePlayerAgent"):
         wm = agent.wm

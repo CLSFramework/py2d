@@ -5,17 +5,14 @@ from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
 from pyrusgeom.segment_2d import Segment2D
 from pyrusgeom.circle_2d import Circle2D
-#from src.setplay.BhvSetPlay import BhvSetPlay
-#from src.setplay.BhvGoToPlacedBall import BhvGoToPlacedBall
 from src.behaviors.bhv_starter_pass import BhvStarterPass
 from src.utils.tools import Tools
-#from src.setplay.BhvSetPlay import BhvSetPlay
-from src.strategy.starter_strategy import StarterStrategy
 import pyrusgeom.soccer_math as smath
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 import math
 from src.utils.tools import Tools
+
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
@@ -42,12 +39,14 @@ class BhvStarterSetPlayIndirectFreeKick:
 
     def do_kicker(self, agent: "SamplePlayerAgent"):
         from src.behaviors.starter_setplay.bhv_starter_go_to_placed_ball import BhvStarterGoToPlacedBall
+        from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay
         go_to_placed_ball = BhvStarterGoToPlacedBall(0.0)
         # go to ball
         go_to_placed_ball.execute(agent)
 
         # wait
-        self.do_kick_wait(agent)
+        setplay = BhvStarterSetPlay()
+        setplay.do_kick_wait(agent)
 
         # kick to the teammate exist at the front of their goal
         self.do_kick_to_shooter(agent)
@@ -112,26 +111,6 @@ class BhvStarterSetPlayIndirectFreeKick:
         agent.add_action(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=target_point, first_speed=ball_speed, force_mode=False)))
         return True
         #agent.add_say_message(BallMessage(agent.effector().queued_next_ball_pos(), agent.effector().queued_next_ball_vel())) #TODO
-
-    def do_kick_wait(self, agent: "SamplePlayerAgent"):
-        wm = agent.wm
-        face_point = Vector2D(50.0, 0.0)
-        self_position = Vector2D(wm.self.position.x, wm.self.position.y)
-        face_angle = (face_point - self_position).th()
-
-        if wm.time_stopped > 0:
-            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
-            return True
-
-        if abs(face_angle.degree() - wm.self.body_direction) > 5.0:
-            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
-            return True
-
-        if wm.set_play_count <= 10 and not Tools.get_teammates_from_self(agent):
-            agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=Tools.convert_vector2d_to_rpc_vector2d(face_point), cycle=2)))
-            return True
-
-        return False
 
     def do_kick_to_shooter(self, agent: "SamplePlayerAgent"):
         wm = agent.wm

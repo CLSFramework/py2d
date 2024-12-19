@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING
-from src.interfaces.IAgent import IAgent
 from service_pb2 import *
 from pyrusgeom.vector_2d import Vector2D
 #from src.behaviors.starter_setplay.bhv_starter_setplay import BhvStarterSetPlay #TODO
