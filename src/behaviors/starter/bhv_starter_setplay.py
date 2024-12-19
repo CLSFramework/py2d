@@ -132,7 +132,7 @@ class BhvStarterSetPlay(IBehavior):
 
     #Check if agent can go to the target point base on the restricted circle in setplay
     def can_go_to(
-        self, agent: IAgent, count, wm, ball_circle: Circle2D, target_point: Vector2D
+        self, agent: IAgent, wm, ball_circle: Circle2D, target_point: Vector2D
     ) -> bool:
         wm = agent.wm
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
@@ -140,7 +140,6 @@ class BhvStarterSetPlay(IBehavior):
         move_line = Segment2D(self_position, target_point)
         n_intersection = ball_circle.intersection(move_line)
 
-        num = str(count)
 
         if n_intersection == 0:
             return True
@@ -151,56 +150,38 @@ class BhvStarterSetPlay(IBehavior):
                 return True
         return False
 
-    #Avoid moving to the restricted circle in setplay 
+    #Finding the agent movement base on the restricted circle in setplaye  
     def get_avoid_circle_point(self, wm, target_point, agent: IAgent):
+
         SP = agent.server_params
         wm = agent.wm
         avoid_radius = SP.center_circle_r + agent.player_types[wm.self.id].player_size
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
-        ball_circle = Circle2D(ball_position, avoid_radius)
-        if self.can_go_to(agent, -1, wm, ball_circle, target_point):
+        restricted_circle = Circle2D(ball_position, avoid_radius)
+        #check if the agent can go to the target_point base on the restricted_circle 
+        if self.can_go_to(agent, wm, restricted_circle, target_point):
             return target_point
+        
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
         target_angle = Vector2D(target_point - self_position).th()
         ball_target_angle = Vector2D(target_point - ball_position).th()
         ball_ang = AngleDeg(wm.ball.angle_from_self)
         ball_is_left = ball_ang.is_left_of(target_angle)
-        ANGLE_DIVS = 6
-        subtargets = []
+        
+        #angle_step base on position of the ball if the ball is left of the target it tries find the new target counter clock wise of the restricted circle
         angle_step = 1 if ball_is_left else -1
-        count = 0
-        a = angle_step
-        for i in range(1, ANGLE_DIVS):
-            angle = ball_target_angle + (180.0 / ANGLE_DIVS) * a
-            new_target = Vector2D(
-                ball_position + Vector2D.from_polar(avoid_radius + 1.0, angle)
-            )
-
+        
+        for angle in range(30*angle_step , 180* angle_step , 30*angle_step):
+            new_target = ball_position + Vector2D.polar2vector(avoid_radius + 1.0 , angle)
             if (
                 abs(new_target.x()) > SP.pitch_half_length + SP.pitch_margin - 1.0
                 or abs(new_target.y()) > SP.pitch_half_width + SP.pitch_margin - 1.0
             ):  # TODO pith_margin
                 break
-            if self.can_go_to(agent, count, wm, ball_circle, new_target):
+            if self.can_go_to(agent, wm, restricted_circle, new_target):
                 return new_target
-            a += angle_step
-            count += 1
-        a = -angle_step
-        for i in range(1, ANGLE_DIVS * 2):
-            angle = ball_target_angle + (180.0 / ANGLE_DIVS) * a
-            new_target = Vector2D(
-                ball_position + Vector2D.from_polar(avoid_radius + 1.0, angle)
-            )
 
-            if (
-                abs(new_target.x()) > SP.pitch_half_length + SP.pitch_margin - 1.0
-                or abs(new_target.y()) > SP.pitch_half_width + SP.pitch_margin - 1.0
-            ):
-                break
-            if self.can_go_to(agent, count, wm, ball_circle, new_target):
-                return new_target
-            a -= angle_step
-            count += 1
+
         return target_point
 
     #Check that if the agent should kick or not 
@@ -209,21 +190,22 @@ class BhvStarterSetPlay(IBehavior):
         min_dist = 10000.0
         unum = 0
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
-        for i in range(1, 12):
-            if (
-                i == wm.our_goalie_uniform_number
-                and wm.game_mode_type == GameModeType.GoalieCatch_
-            ):
-                home_pos: Vector2D = Tools.convert_rpc_vector2d_to_vector2d(wm.teammates[
-                    wm.our_goalie_uniform_number - 1
-                ].position)
-            elif i == wm.our_goalie_uniform_number:
+        #find minimum distance between the our team agents and the ball
+        for i in range(1,12):
+            if i == wm.our_goalie_uniform_number and not wm.game_mode_type == GameModeType.GoalieCatch_:
                 continue
-            else:
+
+            if i == wm.our_goalie_uniform_number:
+                home_pos: Vector2D = Tools.convert_rpc_vector2d_to_vector2d(wm.teammates[wm.our_goalie_uniform_number - 1].position)
+                
+            else :
                 home_pos: Vector2D = agent.strategy.get_position(i, agent)
+
             if home_pos.dist(ball_position) < min_dist:
                 min_dist = home_pos.dist(ball_position)
                 unum = i
+
+                
         if wm.self.uniform_number == unum:
             return True
         return False
@@ -269,18 +251,18 @@ class BhvStarterSetPlay(IBehavior):
                 target_point = ball_position
                 target_point += ball_to_target.set_length_vector(11.0)
 
-        if (
-            wm.game_mode_type == GameModeType.KickOff_
-            and agent.server_params.kickoff_offside
-        ):
+        if wm.game_mode_type == GameModeType.KickOff_ and agent.server_params.kickoff_offside:
             target_point.set_x(min(-1.0e-5, target_point.x()))
 
         adjusted_point = self.get_avoid_circle_point(wm, target_point, agent)
         dist_thr = wm.ball.dist_from_self * 0.1
+
         if dist_thr < 0.7:
             dist_thr = 0.7
+
         self_velocity = Vector2D(wm.self.velocity.x, wm.self.velocity.y)
         self_position = Vector2D(wm.self.position.x, wm.self.position.y)
+        
         if (
             adjusted_point != target_point
             and ball_position.dist(target_point) > 10.0
@@ -306,7 +288,7 @@ class BhvStarterSetPlay(IBehavior):
         )
         return True
     
-    #Agent waiting before kick 
+    #Check gent waiting before kick 
     def do_kick_wait(self, agent: "SamplePlayerAgent", action: PlayerAction = None):
         wm = agent.wm
         
