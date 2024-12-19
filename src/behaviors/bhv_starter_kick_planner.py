@@ -22,17 +22,25 @@ class BhvStarterKickPlanner(IBehavior):
 
     def execute(self, agent: "SamplePlayerAgent"):
         agent.logger.debug("BhvStarterKickPlanner.execute")
-        self.starter_shoot.execute(agent)
+        
+        if self.starter_shoot.execute(agent):
+            agent.logger.debug("Shooting")
+            
         opps = Tools.get_opponents_from_self(agent)
-        nearest_opp = opps[0] if opps else None
-        nearest_opp_dist = nearest_opp.dist_from_self if nearest_opp else 1000.0
+        nearest_opp_dist = min((opp.dist_from_self for opp in opps), default=1000.0)
         
         if nearest_opp_dist < 10:
-            self.starter_pass.execute(agent)
+            if self.starter_pass.execute(agent):
+                agent.logger.debug("Passing")
             
-        self.starter_dribble.execute(agent)
+        if self.starter_dribble.execute(agent):
+            agent.logger.debug("Dribbling")
         
         if nearest_opp_dist > 2.5:
             agent.add_action(PlayerAction(body_hold_ball=Body_HoldBall()))
+            agent.logger.debug("Holding ball")
 
-        self.starter_clear_ball.execute(agent)
+        if self.starter_clear_ball.execute(agent):
+            agent.logger.debug("Clearing ball")
+            
+        return True
