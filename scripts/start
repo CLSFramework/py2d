@@ -8,7 +8,7 @@ teamname="CLSF"
 
 cd $BASEDIR
 
-options="--team_name $teamname --server-host $HOST --use-random-port --close-server --disable-log-file"
+options="--team_name $teamname --server-host $HOST --use-random-rpc-port --auto-close-rpc-server --disable-log-file"
 
 case $NUM in
     1)
