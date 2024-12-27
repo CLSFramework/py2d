@@ -62,3 +62,20 @@ class SamplePlayerAgent(IAgent, ABC):
             Strategy: Current strategy instance (FormationStrategy or StarterStrategy)
         """
         return self.strategy
+    
+    def get_actions(self) -> PlayerActions:
+        """
+        Get the list of player actions to be executed
+        """
+        
+        res = PlayerActions()
+        res.actions.extend(self.actions)
+        
+        if self.use_starter_code:
+            res.ignore_doHeardPassRecieve = True
+            res.ignore_doIntention = True
+            res.ignore_shootInPreprocess = True
+        else:
+            pass
+            # res.ignore_shootInPreprocess = True
+        return res

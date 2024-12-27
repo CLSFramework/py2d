@@ -156,21 +156,39 @@ class Tools:
         return d
     
     @staticmethod
-    def cycles_to_reach_distance(dash_dist, real_speed_max):
+    def update_dash_distance_table(pt: PlayerType, agent: IAgent):
+        sp: ServerParam = agent.server_params
+        agent.memory.dash_distance_tables[pt.id] = [0] * 50
+        speed = 0.0
+        reach_dist = 0.0
+        accel = sp.max_dash_power * pt.dash_power_rate * pt.effort_max
+        for counter in range(50):
+            if speed + accel > pt.player_speed_max:
+                accel = pt.player_speed_max - speed
+            
+            speed += accel
+            reach_dist += speed
+            agent.memory.dash_distance_tables[pt.id][counter] = reach_dist
+            speed *= pt.player_decay
+            
+    @staticmethod
+    def cycles_to_reach_distance(agent: IAgent, player: Player, dash_dist: float):
         if dash_dist <= 0.001:
             return 0
-        return int(math.ceil(dash_dist / real_speed_max))
-        # todo: implement this
-        # ddc = 0
-        # for dd in self._dash_distance_table:
-        #     if dash_dist <= dd:
-        #         return ddc
-        #     ddc += 1
+        player_type = agent.get_player_type(player.type_id)
+        dash_distance_table = agent.memory.dash_distance_tables[player_type.id]
+        
+        it = next((i for i, dist in enumerate(dash_distance_table) if dist >= dash_dist - 0.001), len(dash_distance_table))
 
-        # cycle = len(self._dash_distance_table)
-        # rest_dist = dash_dist - self._dash_distance_table[cycle - 1]
-        # cycle += int(math.ceil(rest_dist / self.real_speed_max()))
-        # return cycle
+        if it < len(dash_distance_table):
+            return it + 1
+
+        rest_dist = dash_dist - dash_distance_table[-1]
+        cycle = len(dash_distance_table)
+
+        cycle += math.ceil(rest_dist / player_type.real_speed_max)
+
+        return cycle
         
     @staticmethod
     def predict_player_turn_cycle(sp: ServerParam, ptype: PlayerType, player_body: AngleDeg, player_speed, target_dist,

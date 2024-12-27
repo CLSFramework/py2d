@@ -66,3 +66,10 @@ class SampleCoachAgent(IAgent, ABC):
         # ))
         
         self.logger.debug(f'actions: {self.actions}')
+        
+    def get_actions(self) -> CoachActions:
+        """
+        Get the list of coach actions to be executed
+        """
+        
+        return CoachActions(actions=self.actions)

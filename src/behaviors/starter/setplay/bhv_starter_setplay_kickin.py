@@ -201,33 +201,34 @@ class BhvStarterSetPlayKickIn:
         # Check if the agent has sufficient stamina and the nearest opponent is close to the target point then move away from the opponent
         if wm.self.stamina > agent.server_params.stamina_max * 0.9:
             nearest_opp = Tools.get_opponent_nearest_to_self(agent)
-            nearest_opp_pos = Vector2D(nearest_opp.position.x, nearest_opp.position.y)
 
-            if nearest_opp and nearest_opp_pos.dist(target_point) < 3.0:
-                add_vec = ball_position - target_point
-                add_vec.set_length(3.0)
+            if nearest_opp:
+                nearest_opp_pos = Vector2D(nearest_opp.position.x, nearest_opp.position.y)
+                if nearest_opp_pos.dist(target_point) < 3.0:
+                    add_vec = ball_position - target_point
+                    add_vec.set_length(3.0)
 
-                time_val = wm.cycle % 60
-                if time_val < 20:
-                    pass
-                elif time_val < 40:
-                    target_point += add_vec.rotated_vector(90.0)
-                else:
-                    target_point += add_vec.rotated_vector(-90.0)
+                    time_val = wm.cycle % 60
+                    if time_val < 20:
+                        pass
+                    elif time_val < 40:
+                        target_point += add_vec.rotated_vector(90.0)
+                    else:
+                        target_point += add_vec.rotated_vector(-90.0)
 
-                target_point.set_x(
-                    min(
-                        max(-agent.server_params.pitch_half_length, target_point.x()),
-                        agent.server_params.pitch_half_length,
+                    target_point.set_x(
+                        min(
+                            max(-agent.server_params.pitch_half_length, target_point.x()),
+                            agent.server_params.pitch_half_length,
+                        )
                     )
-                )
-                target_point.set_y(
-                    min(
-                        max(-agent.server_params.pitch_half_width, target_point.y()),
-                        agent.server_params.pitch_half_width,
+                    target_point.set_y(
+                        min(
+                            max(-agent.server_params.pitch_half_width, target_point.y()),
+                            agent.server_params.pitch_half_width,
+                        )
                     )
-                )
-                avoid_opponent = True
+                    avoid_opponent = True
         
         dash_power = setplay.get_set_play_dash_power(agent)
         dist_thr = wm.ball.dist_from_self * 0.07

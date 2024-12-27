@@ -1,9 +1,14 @@
+from typing import TYPE_CHECKING
 from typing import Union
 from abc import ABC, abstractmethod
 from typing import Union
 from service_pb2 import *
 import logging
+from src.utils.memory import Memory
 
+
+if TYPE_CHECKING:
+    from src.utils.tools import Tools
 
 class IAgent(ABC):
     def __init__(self, logger) -> None:
@@ -14,6 +19,7 @@ class IAgent(ABC):
         self.player_params: Union[PlayerParam, None] = None
         self.player_types: dict[PlayerType] = {}
         self.debug_mode: bool = False
+        self.memory: Memory = Memory()
         self.logger: logging.Logger = logger
 
     def set_server_params(self, server_param: ServerParam):
@@ -24,6 +30,8 @@ class IAgent(ABC):
         
     def set_player_types(self, player_type: PlayerType):
         self.player_types[player_type.id] = player_type
+        from src.utils.tools import Tools
+        Tools.update_dash_distance_table(player_type, self)
         
     def get_player_type(self, id: int) -> PlayerType:
         if id < 0:
@@ -82,9 +90,25 @@ class IAgent(ABC):
                 )
             )
         ))
+        
+    def add_log_line(self, level: LoggerLevel, start_x: float, start_y: float, end_x: float, end_y: float, color: str):
+        if not self.debug_mode:
+            return
+        self.add_action(PlayerAction(
+            log=Log(
+                add_line=AddLine(
+                    level=level,
+                    start=RpcVector2D(x=start_x, y=start_y),
+                    end=RpcVector2D(x=end_x, y=end_y),
+                    color=color,
+                )
+            )
+        )
+        )
 
     def add_action(self, action: Union[PlayerAction, CoachAction, TrainerAction]):
         self.actions.append(action)
-        
-    def get_actions(self) -> list[Union[PlayerAction, CoachAction, TrainerAction]]:
-        return self.actions
+    
+    @abstractmethod
+    def get_actions(self) -> Union[PlayerActions, CoachActions, TrainerActions]:
+        pass

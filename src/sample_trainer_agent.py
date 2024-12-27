@@ -69,3 +69,10 @@ class SampleTrainerAgent(IAgent, ABC):
             self.playerTypes[params.id] = params
         else:
             raise Exception("Unknown params type")
+        
+    def get_actions(self) -> TrainerActions:
+        """
+        Get the list of coach actions to be executed
+        """
+        
+        return TrainerActions(actions=self.actions)
