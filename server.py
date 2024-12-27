@@ -26,7 +26,7 @@ log_dir = None
 
 
 class GrpcAgent:
-    def __init__(self, agent_type, uniform_number, logger) -> None:
+    def __init__(self, agent_type, uniform_number, logger, debug) -> None:
         self.agent_type: pb2.AgentType = agent_type
         self.uniform_number: int = uniform_number
         self.agent: IAgent = None
@@ -37,6 +37,7 @@ class GrpcAgent:
             self.agent = SampleCoachAgent(self.logger)
         elif self.agent_type == pb2.AgentType.TrainerT:
             self.agent = SampleTrainerAgent(self.logger)
+        self.agent.set_debug_mode(debug)
         self.debug_mode: bool = False
     
     def GetAction(self, state: pb2.State):
@@ -105,10 +106,11 @@ class GrpcAgent:
             return pb2.PlayerActions()
         
 class GameHandler(pb2_grpc.GameServicer):
-    def __init__(self, shared_lock, shared_number_of_connections) -> None:
+    def __init__(self, shared_lock, shared_number_of_connections, debug) -> None:
         self.agents: dict[int, GrpcAgent] = {}
         self.shared_lock = shared_lock
         self.shared_number_of_connections = shared_number_of_connections
+        self.debug = debug
 
     def GetPlayerActions(self, state: pb2.State, context):
         main_logger.debug(f"GetPlayerActions unum {state.register_response.uniform_number} at {state.world_model.cycle}")
@@ -166,7 +168,7 @@ class GameHandler(pb2_grpc.GameServicer):
                                         agent_type=agent_type)
                 logger = setup_logger(f"agent{register_response.uniform_number}_{register_response.client_id}", log_dir, 
                                       console_level=player_console_logging_level, file_level=player_file_logging_level)
-                self.agents[self.shared_number_of_connections.value] = GrpcAgent(agent_type, uniform_number, logger)
+                self.agents[self.shared_number_of_connections.value] = GrpcAgent(agent_type, uniform_number, logger, self.debug)
             return register_response
         except Exception as e:
             main_logger.error(f"Error in Register: {e}")
@@ -187,9 +189,9 @@ class GameHandler(pb2_grpc.GameServicer):
         return res
     
 
-def serve(port, shared_lock, shared_number_of_connections):
+def serve(port, shared_lock, shared_number_of_connections, debug):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=22))
-    game_service = GameHandler(shared_lock, shared_number_of_connections)
+    game_service = GameHandler(shared_lock, shared_number_of_connections, debug)
     pb2_grpc.add_GameServicer_to_server(game_service, server)
     server.add_insecure_port(f'[::]:{port}')
     server.start()
@@ -205,6 +207,7 @@ def main():
     parser.add_argument('-l', '--log-dir', required=False, help='The directory of the log file', 
                         default=f'logs/{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
     parser.add_argument('--disable-log-file', required=False, help='Disable logging to a file', default=False, action='store_true')
+    parser.add_argument('-d', '--debug', required=False, help='Enable debug mode for agents', default=False, action='store_true')
     
     args = parser.parse_args()
     
@@ -219,7 +222,7 @@ def main():
     shared_lock = Lock()  # Create a Lock for synchronization
     shared_number_of_connections = manager.Value('i', 0)
     
-    serve(args.rpc_port, shared_lock, shared_number_of_connections)
+    serve(args.rpc_port, shared_lock, shared_number_of_connections, args.debug)
     
 if __name__ == '__main__':
     main()

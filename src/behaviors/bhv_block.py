@@ -81,7 +81,7 @@ class Bhv_Block(IBehavior):
                                                                                       max_dash_power=100.0,
                                                                                       distance_threshold=0.5)))
                         agent.add_action(PlayerAction(neck_turn_to_ball_or_scan=Neck_TurnToBallOrScan(count_threshold=0)))
-                        agent.add_log_circle(LoggerLevel.BLOCK, future_ball_pos.x, future_ball_pos.y, 0.5, 'red', True)
+                        agent.add_log_circle(LoggerLevel.BLOCK, future_ball_pos.x(), future_ball_pos.y(), 0.5, 'red', True)
                         return True
                     else:
                         agent.logger.debug(f'Bhv_Block: False: tm {our_player.uniform_number} can block in {block_cycles} in {future_ball_pos=}')

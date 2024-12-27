@@ -90,6 +90,21 @@ class IAgent(ABC):
                 )
             )
         ))
+        
+    def add_log_line(self, level: LoggerLevel, start_x: float, start_y: float, end_x: float, end_y: float, color: str):
+        if not self.debug_mode:
+            return
+        self.add_action(PlayerAction(
+            log=Log(
+                add_line=AddLine(
+                    level=level,
+                    start=RpcVector2D(x=start_x, y=start_y),
+                    end=RpcVector2D(x=end_x, y=end_y),
+                    color=color,
+                )
+            )
+        )
+        )
 
     def add_action(self, action: Union[PlayerAction, CoachAction, TrainerAction]):
         self.actions.append(action)

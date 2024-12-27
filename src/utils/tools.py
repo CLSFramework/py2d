@@ -176,7 +176,7 @@ class Tools:
         if dash_dist <= 0.001:
             return 0
         player_type = agent.get_player_type(player.type_id)
-        dash_distance_table = agent.memory.dash_distance_tables[player.type_id]
+        dash_distance_table = agent.memory.dash_distance_tables[player_type.id]
         
         it = next((i for i, dist in enumerate(dash_distance_table) if dist >= dash_dist - 0.001), len(dash_distance_table))
 

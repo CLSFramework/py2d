@@ -34,6 +34,8 @@ def run_server_script(args):
         sys.argv = ['server.py', '--rpc-port', str(rpc_port), '--log-dir', log_dir]
         if args.disable_log_file:
             sys.argv += ['--disable-log-file']
+        if args.debug:
+            sys.argv += ['--debug']
         main()
 
     # Start the main function as a new process
