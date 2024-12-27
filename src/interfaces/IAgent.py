@@ -1,11 +1,14 @@
+from typing import TYPE_CHECKING
 from typing import Union
 from abc import ABC, abstractmethod
 from typing import Union
 from service_pb2 import *
 import logging
 from src.utils.memory import Memory
-from src.utils.tools import Tools
 
+
+if TYPE_CHECKING:
+    from src.utils.tools import Tools
 
 class IAgent(ABC):
     def __init__(self, logger) -> None:
@@ -27,6 +30,7 @@ class IAgent(ABC):
         
     def set_player_types(self, player_type: PlayerType):
         self.player_types[player_type.id] = player_type
+        from src.utils.tools import Tools
         Tools.update_dash_distance_table(player_type, self)
         
     def get_player_type(self, id: int) -> PlayerType:
@@ -89,6 +93,7 @@ class IAgent(ABC):
 
     def add_action(self, action: Union[PlayerAction, CoachAction, TrainerAction]):
         self.actions.append(action)
-        
-    def get_actions(self) -> list[Union[PlayerAction, CoachAction, TrainerAction]]:
-        return self.actions
+    
+    @abstractmethod
+    def get_actions(self) -> Union[PlayerActions, CoachActions, TrainerActions]:
+        pass

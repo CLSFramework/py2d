@@ -38,7 +38,6 @@ class GrpcAgent:
         elif self.agent_type == pb2.AgentType.TrainerT:
             self.agent = SampleTrainerAgent(self.logger)
         self.debug_mode: bool = False
-        
     
     def GetAction(self, state: pb2.State):
         self.logger.debug(f"================================= cycle={state.world_model.cycle}.{state.world_model.stoped_cycle} =================================")
@@ -57,9 +56,7 @@ class GrpcAgent:
         
     def GetPlayerActions(self, state: pb2.State):
         self.agent.update_actions(state.world_model)
-        res = pb2.PlayerActions()
-        res.actions.extend(self.agent.get_actions())
-        return res
+        return self.agent.get_actions()
     
     def GetBestPlannerAction(self, request: pb2.BestPlannerActionRequest) -> int:
         self.logger.debug(f"GetBestPlannerAction cycle:{request.state.world_model.cycle} pairs:{len(request.pairs)} unum:{request.state.register_response.uniform_number}")
@@ -74,11 +71,11 @@ class GrpcAgent:
     
     def GetCoachActions(self, state: pb2.State):
         self.agent.update_actions(state.world_model)
-        return pb2.CoachActions(actions=self.agent.get_actions())
+        return self.agent.get_actions()
     
     def GetTrainerActions(self, state: pb2.State):
         self.agent.update_actions(state.world_model)
-        return pb2.TrainerActions(actions=self.agent.get_actions())
+        return self.agent.get_actions()
     
     def SetServerParams(self, server_params: pb2.ServerParam):
         try:

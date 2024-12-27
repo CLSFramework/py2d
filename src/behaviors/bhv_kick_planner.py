@@ -4,6 +4,7 @@ from src.interfaces.IAgent import IAgent
 from pyrusgeom.soccer_math import *
 from pyrusgeom.geom_2d import *
 from service_pb2 import *
+from src.behaviors.bhv_shoot import BhvShoot
 
 if TYPE_CHECKING:
     from src.sample_player_agent import SamplePlayerAgent
@@ -39,6 +40,8 @@ class BhvKickPlanner(IBehavior):
     def execute(self, agent: "SamplePlayerAgent"):
         agent.logger.debug("--- WithBallDecisionMaker ---")
 
+        BhvShoot().execute(agent)
+        
         agent.add_action(
             PlayerAction(helios_offensive_planner=self._get_helios_offensive_planner(agent))
         )
