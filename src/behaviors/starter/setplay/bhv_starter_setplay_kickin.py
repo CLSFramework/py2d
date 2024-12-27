@@ -72,6 +72,35 @@ class BhvStarterSetPlayKickIn:
         passer.execute(agent)
 
         # Kick to the nearest teammate
+        if self.kick_to_nearest_teammate(agent):
+            return True
+
+        # Clear
+        # Turn to ball
+        if abs(wm.ball.angle_from_self - wm.self.body_direction) > 1.5:
+            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
+            return True
+
+        # Advance ball
+        if wm.self.position.x < 20.0:
+            agent.add_action(PlayerAction(body_advance_ball=Body_AdvanceBall()))
+            return True
+
+        # Kick to the opponent side corner
+        if self.kick_to_opponent_side_corner(agent):
+            return True
+
+        return True
+
+    def kick_to_nearest_teammate(self, agent: "SamplePlayerAgent"):
+        """
+        Perform the kick action to the nearest teammate.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the behavior.
+        Returns:
+            bool: True if the action was added to the agent's action list, False otherwise.
+        """
+        wm = agent.wm
         max_ball_speed = wm.self.kick_rate * agent.server_params.max_power
         ball_position = Vector2D(wm.ball.position.x, wm.ball.position.y)
         receiver: Player = Tools.get_teammate_nearest_to(agent, ball_position)
@@ -121,20 +150,17 @@ class BhvStarterSetPlayKickIn:
                 )
             )
             return True
-
-        # Clear
-        # Turn to ball
-        if abs(wm.ball.angle_from_self - wm.self.body_direction) > 1.5:
-            agent.add_action(PlayerAction(body_turn_to_ball=Body_TurnToBall(cycle=1)))
-            return True
-
-        # Advance ball
-        if wm.self.position.x < 20.0:
-            agent.add_action(PlayerAction(body_advance_ball=Body_AdvanceBall()))
-            return True
-
-        # Kick to the opponent side corner
-
+        return False
+    
+    def kick_to_opponent_side_corner(self, agent: "SamplePlayerAgent"):
+        """
+        Perform the kick action to the opponent side corner.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the behavior.
+        Returns:
+            bool: True if the action was added to the agent's action list, False otherwise.
+        """
+        wm = agent.wm
         target_point = Vector2D(
             agent.server_params.pitch_half_length - 2.0,
             (agent.server_params.pitch_half_width - 5.0)
@@ -154,9 +180,8 @@ class BhvStarterSetPlayKickIn:
                 )
             )
         )
-
         return True
-
+    
     def do_move(self, agent: "SamplePlayerAgent"):
         """
         Execute the move action for the non-kicker agent in the kickin set play.

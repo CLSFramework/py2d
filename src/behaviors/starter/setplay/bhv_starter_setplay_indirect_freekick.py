@@ -67,7 +67,6 @@ class BhvStarterSetPlayIndirectFreeKick:
         self.do_kick_to_shooter(agent)
 
         wm = agent.wm
-        max_kick_speed = wm.self.kick_rate * agent.server_params.max_power
 
         # pass
         passer = BhvStarterPass()
@@ -75,55 +74,15 @@ class BhvStarterSetPlayIndirectFreeKick:
         # wait(2)
         if wm.set_play_count <= 3:
             agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=50, y=0), cycle=2)))
-
-        # no teammate
-        if not Tools.get_teammates_from_ball(agent) or Tools.get_teammates_from_ball(agent)[0].dist_from_self > 35.0 or Tools.get_teammates_from_ball(agent)[0].position.x < -30.0:
-            real_set_play_count = int(wm.cycle - wm.last_set_play_start_time)
-            if real_set_play_count <= agent.server_params.drop_ball_time - 3:
-                agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=50, y=0), cycle=2)))
-
-
-            target_point = Vector2D(agent.server_params.pitch_half_length,
-                                   (-1 + 2 * wm.cycle % 2) * (agent.server_params.goal_width / 2 - 0.8))
-            ball_speed = max_kick_speed
-            agent.add_action(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
-            
             return True
 
-        # kick to the teammate nearest to opponent goal
-        self_position = Vector2D(wm.self.position.x, wm.self.position.y)
-        goal = Vector2D(agent.server_params.pitch_half_length, self_position.y() * 0.8)
+        # no teammate to kick so do random kick
+        if self.random_kick_no_teammate(agent):
+            return True
 
-        min_dist = 100000.0
-        receiver = None
-
-        for t in Tools.get_teammates_from_ball(agent):
-            if t.dist_from_ball < 1.5:
-                continue
-            if t.dist_from_ball > 20.0:
-                continue
-            if t.position.x > wm.offside_line_x:
-                continue
-            t_position = Vector2D(t.position.x, t.position.y)
-            dist = t_position.dist(goal) + t.dist_from_ball
-            if dist < min_dist:
-                min_dist = dist
-                receiver = t
-
-        target_point = goal
-        target_dist = 10.0
-        if not receiver:
-            target_dist = Tools.get_teammates_from_self(agent)[0].dist_from_self
-            target_point = Tools.get_teammates_from_self(agent)[0].position
-        else:
-            target_dist = receiver.dist_from_self
-            target_point = receiver.position
-            target_point.x += 0.6
-
-        ball_speed = Tools.calc_first_term_geom_series_last(1.8, target_dist, agent.server_params.ball_decay)
-        ball_speed = min(ball_speed, max_kick_speed)
-
-        agent.add_action(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=target_point, first_speed=ball_speed, force_mode=False)))
+        # kick to the nearest teammate
+        if self.kick_to_teammate_nearest_to_goal(agent):
+            return True
         return True
         #agent.add_say_message(BallMessage(agent.effector().queued_next_ball_pos(), agent.effector().queued_next_ball_vel())) #TODO
 
@@ -185,6 +144,78 @@ class BhvStarterSetPlayIndirectFreeKick:
         agent.add_action(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
         return True
 
+    def random_kick_no_teammate(self, agent: "SamplePlayerAgent"):
+        """
+        Execute a random kick when there is no teammate to pass to.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the behavior.
+        Returns:
+            bool: True if the action was added to the agent's action list, False otherwise.
+        """
+        wm = agent.wm
+        max_kick_speed = wm.self.kick_rate * agent.server_params.max_power
+        
+        if not Tools.get_teammates_from_ball(agent) or Tools.get_teammates_from_ball(agent)[0].dist_from_self > 35.0 or Tools.get_teammates_from_ball(agent)[0].position.x < -30.0:
+            real_set_play_count = int(wm.cycle - wm.last_set_play_start_time)
+            if real_set_play_count <= agent.server_params.drop_ball_time - 3:
+                agent.add_action(PlayerAction(body_turn_to_point=Body_TurnToPoint(target_point=RpcVector2D(x=50, y=0), cycle=2)))
+
+
+            target_point = Vector2D(agent.server_params.pitch_half_length,
+                                   (-1 + 2 * wm.cycle % 2) * (agent.server_params.goal_width / 2 - 0.8))
+            ball_speed = max_kick_speed
+            agent.add_action(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=Tools.convert_vector2d_to_rpc_vector2d(target_point), first_speed=ball_speed, force_mode=False)))
+            
+            return True
+        
+        return False
+        
+    def kick_to_teammate_nearest_to_goal(self, agent: "SamplePlayerAgent"):
+        """
+        Execute a kick to the teammate nearest to the opponent goal.
+        Args:
+            agent (SamplePlayerAgent): The agent that will execute the behavior.
+        Returns:
+            bool: True if the action was added to the agent's action list, False otherwise.
+        """
+        wm = agent.wm
+        max_kick_speed = wm.self.kick_rate * agent.server_params.max_power
+        
+        self_position = Vector2D(wm.self.position.x, wm.self.position.y)
+        goal = Vector2D(agent.server_params.pitch_half_length, self_position.y() * 0.8)
+
+        min_dist = 100000.0
+        receiver = None
+
+        for t in Tools.get_teammates_from_ball(agent):
+            if t.dist_from_ball < 1.5:
+                continue
+            if t.dist_from_ball > 20.0:
+                continue
+            if t.position.x > wm.offside_line_x:
+                continue
+            t_position = Vector2D(t.position.x, t.position.y)
+            dist = t_position.dist(goal) + t.dist_from_ball
+            if dist < min_dist:
+                min_dist = dist
+                receiver = t
+
+        target_point = goal
+        target_dist = 10.0
+        if not receiver:
+            target_dist = Tools.get_teammates_from_self(agent)[0].dist_from_self
+            target_point = Tools.get_teammates_from_self(agent)[0].position
+        else:
+            target_dist = receiver.dist_from_self
+            target_point = receiver.position
+            target_point.x += 0.6
+
+        ball_speed = Tools.calc_first_term_geom_series_last(1.8, target_dist, agent.server_params.ball_decay)
+        ball_speed = min(ball_speed, max_kick_speed)
+
+        agent.add_action(PlayerAction(body_kick_one_step=Body_KickOneStep(target_point=target_point, first_speed=ball_speed, force_mode=False)))
+        return True
+    
     def get_avoid_circle_point(self, agent: IAgent, point: Vector2D):
         '''
         Calculate a point to avoid a circle area around a specific location (goal area or center circle).

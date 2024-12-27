@@ -318,7 +318,7 @@ class Tools:
             list[Player]: Sorted list of opponent players
         """
         # Copy the list of opponents, excluding invalid entries
-        opponents = [copy(opp) for opp in agent.wm.opponents if opp and opp.uniform_number != agent.wm.self.uniform_number and opp.uniform_number >= 0]
+        opponents = [copy(opp) for opp in agent.wm.opponents if opp and opp.uniform_number >= 0]
         
         # Sort the copied list by distance from self
         opponents.sort(key=lambda opp: opp.dist_from_self)
