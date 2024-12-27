@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from typing import Union
 from service_pb2 import *
 import logging
+from src.utils.memory import Memory
+from src.utils.tools import Tools
 
 
 class IAgent(ABC):
@@ -14,6 +16,7 @@ class IAgent(ABC):
         self.player_params: Union[PlayerParam, None] = None
         self.player_types: dict[PlayerType] = {}
         self.debug_mode: bool = False
+        self.memory: Memory = Memory()
         self.logger: logging.Logger = logger
 
     def set_server_params(self, server_param: ServerParam):
@@ -24,6 +27,7 @@ class IAgent(ABC):
         
     def set_player_types(self, player_type: PlayerType):
         self.player_types[player_type.id] = player_type
+        Tools.update_dash_distance_table(player_type, self)
         
     def get_player_type(self, id: int) -> PlayerType:
         if id < 0:
