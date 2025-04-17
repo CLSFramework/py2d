@@ -175,17 +175,6 @@ if __name__ == "__main__":
             import random
             import string
             args.team_name = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
-        
-        #Check that rcssserver is running for 10 seconds 
-        start_time = time.time()
-        start_team_logger.debug("Checking for rcssserver process...")
-        time_th = 10
-        while not check_rcssserver_process(args):
-            if time.time() - start_time > time_th:
-                raise Exception("rcssserver process not found.")
-            time.sleep(1)
-        start_team_logger.debug("rcssserver process found.")
-
 
         # Run the server.py script first
         all_server_processes = []
